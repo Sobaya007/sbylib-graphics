@@ -5,7 +5,7 @@ enum BlockType {
     Uniform
 }
 
-string getCode(BlockType b) {
+package string getCode(BlockType b) {
     final switch(b) {
     case BlockType.Struct:
         return "struct";

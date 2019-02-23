@@ -3,8 +3,8 @@ module sbylib.graphics.event.event;
 public import sbylib.wrapper.glfw : KeyButton;
 public import sbylib.graphics.event.eventcontext : EventContext;
 
-alias Condition = bool delegate();
-alias Callback = void delegate();
+private alias Condition = bool delegate();
+private alias Callback = void delegate();
 
 class Event {
     private void delegate() callback;

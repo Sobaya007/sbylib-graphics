@@ -33,7 +33,7 @@ interface Statement {
     }
 }
 
-mixin template ImplGraph(Members...) {
+package mixin template ImplGraph(Members...) {
 
     string graph(bool[] isEnd) {
         import std.array : join;

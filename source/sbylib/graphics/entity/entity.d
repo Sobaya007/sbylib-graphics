@@ -1,6 +1,7 @@
 module sbylib.graphics.entity.entity;
 
 public import sbylib.math : vec2, vec3, quat, Angle;
+import sbylib.wrapper.gl : BlendFactor;
 import sbylib.wrapper.glfw : Window;
 import sbylib.graphics.renderable : Renderable;
 import sbylib.graphics.geometry : IGeometry;
@@ -10,9 +11,12 @@ import std.format : format;
 class Entity : Renderable {
 
     private IGeometry _geometry;
-    abstract Mat _material();
-    abstract void setUniform();
+    protected abstract Mat _material();
+    protected abstract void setUniform();
+
+    bool blend;
     bool depthTest;
+    BlendFactor srcFactor = BlendFactor.SrcAlpha, dstFactor = BlendFactor.OneMinusSrcAlpha;
 
     IGeometry geometry() {
         return _geometry;
@@ -32,8 +36,8 @@ class Entity : Renderable {
         this.setUniform();
 
         GlUtils.depthTest(this.depthTest);
-        GlFunction.depthFunc(TestFunc.Less);
-        GlUtils.depthWrite(true);
+        GlUtils.blend(this.blend);
+        GlFunction.blendFunc(this.srcFactor, this.dstFactor);
 
         this.geometry.render();
     }
@@ -48,18 +52,20 @@ class Entity : Renderable {
             import std.format : format;
 
             static foreach (mem; __traits(allMembers, This)) {
-                static if (__traits(compiles, mixin("This."~mem)) && hasUDA!(mixin("This."~mem), uniform) && hasFunctionAttributes!(mixin("This."~mem), "ref")) {
+                static if (__traits(compiles, mixin("This."~mem))
+                        && hasUDA!(mixin("This."~mem), uniform)
+                        && hasFunctionAttributes!(mixin("This."~mem), "ref")) {
                     mixin(format!"@uniform %s %s;"(ReturnType!(mixin("This."~mem)).stringof, mem));
                 }
             }
-            bool depthTest;
 
             This build() {
                 auto result = new This;
                 result.geometry = geometry;
-                result.depthTest = depthTest;
                 static foreach (mem; __traits(allMembers, This)) {
-                    static if (__traits(compiles, mixin("This."~mem)) && hasUDA!(mixin("This."~mem), uniform) && hasFunctionAttributes!(mixin("This."~mem), "ref")) {
+                    static if (__traits(compiles, mixin("This."~mem))
+                            && hasUDA!(mixin("This."~mem), uniform)
+                            && hasFunctionAttributes!(mixin("This."~mem), "ref")) {
                         mixin(format!"result.%s = this.%s;"(mem, mem));
                     }
                 }

@@ -3,16 +3,13 @@ module sbylib.graphics.renderable;
 import std.container : Array;
 import sbylib.graphics.event : Event;
 
-alias RenderCallback = void delegate();
-
-struct RenderCondition {
-    Renderable renderable;
-}
+private alias RenderCallback = void delegate();
+private struct RenderCondition { Renderable renderable; }
 
 abstract class Renderable {
     protected Array!(RenderCallback) renderCallbackList;
 
-    abstract void renderImpl();
+    protected abstract void renderImpl();
 
     final void render() {
         foreach (cb; renderCallbackList) {
@@ -25,12 +22,12 @@ abstract class Renderable {
         return RenderCondition(this);
     }
 
-    package RenderCallback add(RenderCallback cb) {
+    private RenderCallback add(RenderCallback cb) {
         renderCallbackList ~= cb;
         return cb;
     }
 
-    package void remove(RenderCallback cb) {
+    private void remove(RenderCallback cb) {
         import std.algorithm : find;
         import std.range : take;
 

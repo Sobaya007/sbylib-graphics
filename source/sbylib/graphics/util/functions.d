@@ -8,20 +8,10 @@ import std.traits : isAggregateType, FieldTypeTuple, FieldNameTuple;
 
 void initializeSobaya() {
     import sbylib.wrapper.glfw : GLFW;
+    import sbylib.wrapper.freetype : FreeType;
 
     GLFW.initialize();
-}
-
-auto traverse(Result, Aggregate)(Aggregate aggregate) {
-    Result[] result;
-    static foreach (idx; 0..FieldNameTuple!(Aggregate).length) {
-        static if (is(FieldTypeTuple!(Aggregate)[idx] == Result)) {
-            result ~= mixin("aggregate." ~ FieldNameTuple!(Aggregate)[idx]);
-        } else static if (isAggregateType!(FieldTypeTuple!(Aggregate)[idx])) {
-            result ~= mixin("aggregate." ~ FieldNameTuple!(Aggregate)[idx] ~ ".traverse!(Result)");
-        }
-    }
-    return result;
+    FreeType.initialize();
 }
 
 mixin template DefineCachedValue(Type, string attribute, string name, string expression, string[] keys) {
@@ -140,8 +130,4 @@ mixin template ImplViewMatrix() {
         ~ (hasScale ? ["scale"] : []);
 
     mixin DefineCachedValue!(mat4, "@uniform", "viewMatrix", expression, key);
-}
-
-void lookAt(Entity)(Entity e, vec3 target) {
-    e.rot = mat4.lookAt(e.pos, e.pos - target, vec3(0,1,0)).toMatrix3.toQuaternion;
 }

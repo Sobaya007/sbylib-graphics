@@ -1,17 +1,8 @@
 module sbylib.graphics.animation.animation;
 
 public import std.datetime;
+public import sbylib.graphics.animation.interpolation : Interpolate;
 public import sbylib.graphics.event : Event;
-
-private alias Interpolation = float function(float);
-
-float smoothInOut(float t) {
-    return t * t * (3 - 2 * t);
-}
-
-enum Interpolate : Interpolation {
-    SmoothInOut = &smoothInOut
-}
 
 interface IAnimation {
     Event start();
@@ -30,6 +21,7 @@ class Animation(T) : IAnimation {
 
     Animation to(T arrival) {
         import std.typecons : Nullable, nullable;
+
         Nullable!T departure;
         updateFunction = (float t) {
             if (departure.isNull) departure = getValue().nullable;
@@ -39,7 +31,7 @@ class Animation(T) : IAnimation {
         return this;
     }
 
-    Animation interpolate(Interpolation i) {
+    Animation interpolate(Interpolate i) {
         const b = updateFunction;
         updateFunction = (float t) => b(i(t));
         return this;

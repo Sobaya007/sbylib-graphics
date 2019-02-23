@@ -49,8 +49,4 @@ class Variable : Statement {
             assignedValue ? format!"= %s"(assignedValue) : ""
         ].filter!(s => !s.empty).join(" ") ~ ";";
     }
-
-    //void replaceID(string delegate(string) replace) {
-    //    this.id = replace(this.id);
-    //}
 }

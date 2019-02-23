@@ -45,16 +45,6 @@ class AST {
                 }
             } else if (tokens[0].str == "#") {
                 statements ~= new Sharp(tokens);
-            //} else if (tokens[0].str == "require") {
-            //    if (isConvertible!(AttributeDemand, getAttributeDemandKeyWord)(tokens[1].str)) {
-            //        statements ~= new RequireAttribute(tokens);
-            //    } else if (isConvertible!(UniformDemand, getUniformDemandName)(tokens[1].str)) {
-            //        statements ~= new RequireUniform(tokens);
-            //    } else if (tokens[1].str == "Shader") {
-            //        statements ~= new RequireShader(tokens);
-            //    } else {
-            //        assert(false, to!string(tokens));
-            //    }
             } else if (tokens[0].str == "//") {
                 statements ~= new Comment(tokens);
             } else {

@@ -25,11 +25,6 @@ class Sharp : Statement {
         }
     }
 
-    //static Sharp generateVersionDeclare() {
-    //    import sbylib.wrapper.gl.GL;
-    //    return new Sharp(format!"#version %d"(GL.getShaderVersion()));
-    //}
-
     override string getCode() {
         import std.format : format;
 
@@ -40,16 +35,4 @@ class Sharp : Statement {
 
         assert(false);
     }
-
-    //Space getVertexSpace()
-    //    in(this.type == "vertex")
-    //{
-    //    return convert!(Space, getSpaceName)(this.value);
-    //}
-
-    //RequireAttribute getRequireAttribute()
-    //    in(this.type == "vertex")
-    //{
-    //    return new RequireAttribute(format!"require Position in %s as vec4 gl_Position;"(this.value));
-    //}
 }

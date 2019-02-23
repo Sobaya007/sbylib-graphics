@@ -1,7 +1,7 @@
 module sbylib.graphics.canvas.canvaschannel;
 
 public import sbylib.math : vec4;
-public import sbylib.graphics.color : Color;
+public import sbylib.graphics.util.color : Color;
 public import sbylib.wrapper.gl : Texture, FramebufferAttachType;
 
 struct ChannelConfig(T) {

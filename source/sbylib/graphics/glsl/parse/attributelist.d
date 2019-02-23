@@ -19,7 +19,7 @@ class AttributeList {
         }
     }
 
-    string getCode() {
+    package string getCode() {
         import std.algorithm : map;
         import std.array : join;
 

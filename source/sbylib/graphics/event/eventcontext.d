@@ -4,7 +4,6 @@ public import sbylib.graphics.event.event : Event;
 import std.container : Array;
 
 private alias BindCallback = void delegate();
-
 private struct BindCondition { EventContext context; bool bind; }
 
 class EventContext {
@@ -44,7 +43,7 @@ class EventContext {
         return BindCondition(this, false);
     }
 
-    BindCallback add(BindCallback callback, bool bind) {
+    private BindCallback add(BindCallback callback, bool bind) {
         if (callback) {
             if (bind) bindCallbackList ~= callback;
             else unbindCallbackList ~= callback;
@@ -52,7 +51,7 @@ class EventContext {
         return callback;
     }
 
-    void remove(BindCallback callback, bool bind) {
+    private void remove(BindCallback callback, bool bind) {
         import std.algorithm : find;
         import std.range : take;
 

@@ -1,4 +1,4 @@
-module sbylib.graphics.color;
+module sbylib.graphics.util.color;
 
 public import sbylib.math.vector;
 

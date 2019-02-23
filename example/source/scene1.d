@@ -31,10 +31,10 @@ Scene createScene1() {
                     .transform(mat3.axisAngle(vec3(1,0,0), 90.deg));
 
                 tileSize = vec2(0.02);
-                depthTest = true;
 
                 floor = build();
                 floor.pos.y = -0.12;
+                floor.depthTest = true;
             }
 
             static class Box : Entity {
@@ -51,10 +51,9 @@ Scene createScene1() {
             with (Box.Builder()) {
                 geometry = GeometryLibrary().buildBox();
 
-                depthTest = true;
-
                 box = build();
                 box.scale = 0.1;
+                box.depthTest = true;
             }
 
             Camera camera;

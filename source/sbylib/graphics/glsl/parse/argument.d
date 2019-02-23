@@ -16,7 +16,7 @@ class Argument {
         this.id = tokens.convert();
     }
 
-    string getCode() {
+    package string getCode() {
         import std.algorithm : filter;
         import std.array : empty, join;
         import std.format : format;

@@ -17,6 +17,7 @@ struct GeometryBuilder(Attribute, Index = uint) {
 
     private Attribute[] attributeList;
     private Index[] indexList;
+
     Primitive primitive;
 
     void add(Attribute attribute) {
@@ -108,10 +109,6 @@ class Geometry(Attribute, Index = uint) : IGeometry {
         return _attributeList;
     }
 
-    void update() {
-        this.vertexBuffer.sendSubData(_attributeList, BufferTarget.Array);
-    }
-
     auto transform(mat3 m) {
         import std.traits : isInstanceOf, hasUDA;
 
@@ -139,6 +136,10 @@ class Geometry(Attribute, Index = uint) : IGeometry {
         import sbylib.math : mat3, vec3;
 
         return this.transform(mat3.axisAngle(vec3(0,0,1), angle));
+    }
+
+    private void update() {
+        this.vertexBuffer.sendSubData(_attributeList, BufferTarget.Array);
     }
 
     private template ElementType(T) {

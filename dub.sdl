@@ -9,4 +9,5 @@ targetPath "lib"
 
 dependency "sbylib-gl" version="*"
 dependency "sbylib-glfw" version="*"
+dependency "sbylib-ft" version="*"
 dependency "sbylib-math" version="*"

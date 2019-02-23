@@ -1,16 +1,12 @@
 module sbylib.graphics.event.keyevent;
 public import sbylib.wrapper.glfw : KeyButton, ButtonState, ModKeyButton;
-import sbylib.graphics.event.event : Condition, Event;
+import sbylib.graphics.event.event : Event;
 import sbylib.wrapper.glfw : Window;
 import std.container : Array;
 import std.typecons : BitFlags;
 
 private alias KeyCallback = void delegate(Window, KeyButton, int, ButtonState, BitFlags!ModKeyButton);
-
-private struct KeyCondition {
-    KeyButton button;
-    ButtonState state;
-}
+private struct KeyCondition { KeyButton button; ButtonState state; }
 
 KeyCondition pressed(KeyButton key) {
     return KeyCondition(key, ButtonState.Press);
@@ -40,7 +36,7 @@ Event when(KeyCondition condition) {
     return event;
 }
 
-class KeyEventWatcher {
+private class KeyEventWatcher {
 static:
     private Array!KeyCallback callbackList;
     private bool initialized = false;
@@ -51,13 +47,13 @@ static:
         Window.getCurrentWindow().setKeyCallback!(keyCallback);
     }
 
-    KeyCallback add(KeyCallback callback) {
+    private KeyCallback add(KeyCallback callback) {
         use();
         callbackList ~= callback;
         return callback;
     }
 
-    void remove(KeyCallback callback) {
+    private void remove(KeyCallback callback) {
         import std.algorithm : find;
         import std.range : take;
 
@@ -69,7 +65,7 @@ static:
             foreach (cb; callbackList) {
                 cb(window, button, scanCode, state, mods);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             assert(false, e.toString);
         }
     }

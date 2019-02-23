@@ -2,8 +2,6 @@ module sbylib.graphics.event.finishevent;
 
 public import sbylib.graphics.event.event : Event;
 
-alias FinishCallback = void delegate();
-
 struct Finish {
     Event event;
 }

@@ -3,7 +3,7 @@ module sbylib.graphics.event.mouseevent;
 public import sbylib.wrapper.glfw : MouseButton, ButtonState, ModKeyButton;
 public import sbylib.math : vec2;
 
-import sbylib.graphics.event.event : Condition, Event;
+import sbylib.graphics.event.event : Event;
 import sbylib.wrapper.glfw : Window;
 import std.container : Array;
 import std.typecons : BitFlags;
@@ -98,7 +98,7 @@ Event when(MouseButtonCondition condition) {
     return event;
 }
 
-class MouseEventWatcher {
+private class MouseEventWatcher {
 static:
     private Array!MouseEnterCallback enterCallbackList;
     private Array!MousePosCallback posCallbackList;
@@ -113,13 +113,13 @@ static:
         Window.getCurrentWindow().setMouseButtonCallback!(buttonCallback);
     }
 
-    MouseEnterCallback add(MouseEnterCallback callback) {
+    private MouseEnterCallback add(MouseEnterCallback callback) {
         use();
         enterCallbackList ~= callback;
         return callback;
     }
 
-    void remove(MouseEnterCallback callback) {
+    private void remove(MouseEnterCallback callback) {
         import std.algorithm : find;
         import std.range : take;
 
@@ -131,18 +131,18 @@ static:
             foreach (cb; enterCallbackList) {
                 cb(window, enter);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             assert(false, e.toString);
         }
     }
 
-    MousePosCallback add(MousePosCallback callback) {
+    private MousePosCallback add(MousePosCallback callback) {
         use();
         posCallbackList ~= callback;
         return callback;
     }
 
-    void remove(MousePosCallback callback) {
+    private void remove(MousePosCallback callback) {
         import std.algorithm : find;
         import std.range : take;
 
@@ -154,18 +154,18 @@ static:
             foreach (cb; posCallbackList) {
                 cb(window, pos);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             assert(false, e.toString);
         }
     }
 
-    MouseButtonCallback add(MouseButtonCallback callback) {
+    private MouseButtonCallback add(MouseButtonCallback callback) {
         use();
         buttonCallbackList ~= callback;
         return callback;
     }
 
-    void remove(MouseButtonCallback callback) {
+    private void remove(MouseButtonCallback callback) {
         import std.algorithm : find;
         import std.range : take;
 
@@ -177,7 +177,7 @@ static:
             foreach (cb; buttonCallbackList) {
                 cb(window, button, state, mods);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             assert(false, e.toString);
         }
     }

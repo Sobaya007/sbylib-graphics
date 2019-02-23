@@ -7,6 +7,7 @@ import sbylib.graphics.glsl.parse.statement : ImplGraph;
 
 class ArgumentList {
     Argument[] arguments;
+    alias arguments this;
 
     this(ref Token[] tokens) {
         import sbylib.graphics.glsl.parse.functions : expect;
@@ -18,17 +19,11 @@ class ArgumentList {
         tokens.expect(")");
     }
 
-    string getCode() {
+    package string getCode() {
         import std.algorithm : map;
         import std.array : join;
 
         return arguments.map!(arg => arg.getCode()).join(", ");
     }
-
-    //void replaceID(string delegate(string) replace) {
-    //    foreach (arg; this.arguments) {
-    //        arg.id = replace(arg.id);
-    //    }
-    //}
 }
 

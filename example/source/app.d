@@ -27,10 +27,10 @@ void main() {
     import std.conv : to;
     when(Frame).run({ window.title = mouse.pos.to!string; });
 
-    GL.initialize(); // must be called after activating context
-
     when(KeyButton.Escape.pressed)
         .run({window.shouldClose = true;});
+
+    GL.initialize(); // must be called after activating context
 
     static class ColorMaterial : Material {
 
@@ -87,6 +87,56 @@ void main() {
         when(triangle.beforeRender).run({triangle.size = [100.pixel, 100.pixel];});
     });
 
+    static class TextMaterial : Material {
+        mixin VertexShaderSource!(q{
+            #version 450
+            in vec4 position;
+            in vec2 uv;
+            out vec2 uv2;
+            uniform mat4 worldMatrix;
+
+            void main() {
+                gl_Position = worldMatrix * position;
+                uv2 = uv;
+            }
+        });
+
+        mixin FragmentShaderSource!(q{
+            #version 450
+            in vec2 uv2;
+            out vec4 fragColor;
+            uniform sampler2D tex;
+
+            void main() {
+                fragColor = texture(tex, uv2);
+            }
+        });
+    }
+
+    static class TextBox : Entity {
+        mixin ImplPos;
+        mixin ImplScale;
+        mixin ImplWorldMatrix;
+        mixin Material!(TextMaterial);
+        mixin ImplUniform;
+        mixin ImplBuilder;
+    }
+
+    TextBox textBox;
+    with (TextBox.Builder()) {
+        geometry = GeometryLibrary().buildPlane();
+        with (StringTextureBuilder()) {
+            font = "./font/consola.ttf";
+            text = "0";
+            tex = build();
+        }
+        textBox = build();
+        textBox.pos = [0.pixel, (window.height - 100).pixel];
+        textBox.size = [tex.width.pixel, tex.height.pixel];
+        textBox.scale *= 0.5;
+        textBox.blend = true;
+    }
+
     Scene[] sceneList;
     sceneList ~= createScene0;
     sceneList ~= createScene1;
@@ -104,6 +154,15 @@ void main() {
         if (running) return;
 
         idx += dif;
+
+        with (StringTextureBuilder()) {
+            font = "./font/consola.ttf";
+            text = idx.to!dstring;
+            textBox.tex = build();
+        }
+        textBox.size = [textBox.tex.width.pixel, textBox.tex.height.pixel];
+        textBox.scale *= 0.5;
+
         Color[2] colors = dif == -1 ? [Color.White, Color.Gray] : [Color.Gray, Color.White];
         foreach (i; 0..2) {
             with (AnimationBuilder()) {
@@ -162,7 +221,6 @@ void main() {
 
     Canvas windowCanvas;
     with (CanvasBuilder()) {
-        size = window.size;
         color.clear = Color.Gray;
         windowCanvas = build(window);
     }
@@ -170,8 +228,10 @@ void main() {
     when(Frame).run({
         with (windowCanvas.getContext()) {
             clear(ClearMode.Color, ClearMode.Depth);
+
             sceneList.each!(scene => scene.render());
             triangleList.each!(triangle => triangle.render());
+            textBox.render();
         }
     });
 
@@ -186,4 +246,3 @@ abstract class Scene : Renderable {
     vec2 pos = vec2(0);
     EventContext context;
 }
-

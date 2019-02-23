@@ -51,13 +51,15 @@ abstract class Material {
     }
 
     protected mixin template AddUniform(string source) {
-        import sbylib.math;
+        import sbylib.math : vec2, vec3, vec4, mat2, mat3, mat4;
         import sbylib.graphics.glsl : buildAST, extractUniform, variable;
         import sbylib.wrapper.gl : Texture;
         import std.format : format;
 
         static foreach (uni; source.buildAST().extractUniform()) {
-            mixin(format!"@uniform %s %s;"(TypeD!(uni.type), uni.name));
+            static if (!__traits(hasMember, typeof(this), uni.name)) {
+                mixin(format!"@uniform %s %s;"(TypeD!(uni.type), uni.name));
+            }
         }
 
         private template TypeD(string typeGLSL) {

@@ -6,7 +6,7 @@ enum PrecisionType {
     High
 }
 
-string getCode(PrecisionType p) {
+package string getCode(PrecisionType p) {
     final switch (p) {
         case PrecisionType.Low:
             return "lowp";

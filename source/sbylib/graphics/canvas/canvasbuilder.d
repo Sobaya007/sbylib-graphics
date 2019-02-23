@@ -1,7 +1,7 @@
 module sbylib.graphics.canvas.canvasbuilder;
 
 public import sbylib.graphics.canvas.canvas : Canvas;
-public import sbylib.graphics.color : Color;
+public import sbylib.graphics.util.color : Color;
 public import sbylib.wrapper.glfw : Window;
 
 struct CanvasBuilder {
@@ -51,7 +51,7 @@ struct CanvasBuilder {
         auto stencilChannel = new StencilChannel(window.size);
         stencilChannel.clear = stencil.clear;
 
-        return new Canvas(size, colorChannel, depthChannel, stencilChannel, DefaultFramebuffer);
+        return new Canvas(window.size, colorChannel, depthChannel, stencilChannel, DefaultFramebuffer);
     }
 }
 
