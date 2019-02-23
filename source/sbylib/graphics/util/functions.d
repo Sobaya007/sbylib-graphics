@@ -72,7 +72,8 @@ mixin template ImplPos() {
     }
 
     void pos(Pixel[2] pixel) {
-        this._pos.xy = vec2(pixel) / Window.getCurrentWindow.size;
+        import sbylib.wrapper.gl : GlUtils;
+        this._pos.xy = vec2(pixel) / vec2(GlUtils.getViewport()[2..$]);
     }
 }
 
@@ -94,7 +95,8 @@ mixin template ImplScale() {
     vec3 scale = vec3(1);
 
     void size(Pixel[2] pixel) {
-        this.scale.xy = vec2(pixel) / Window.getCurrentWindow.size;
+        import sbylib.wrapper.gl : GlUtils;
+        this.scale.xy = vec2(pixel) / vec2(GlUtils.getViewport()[2..$]);
     }
 }
 

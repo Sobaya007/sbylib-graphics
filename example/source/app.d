@@ -4,6 +4,8 @@ import sbylib.graphics;
 import sbylib.wrapper.gl;
 import sbylib.wrapper.glfw;
 import scene0 : createScene0;
+import scene1 : createScene1;
+import scene2 : createScene2;
 
 void main() {
 
@@ -87,7 +89,8 @@ void main() {
 
     Scene[] sceneList;
     sceneList ~= createScene0;
-    sceneList ~= createScene0;
+    sceneList ~= createScene1;
+    sceneList ~= createScene2;
 
     foreach (i; 0..sceneList.length) {
         sceneList[i].pos.x = i * 2;
@@ -97,7 +100,7 @@ void main() {
     bool running = false;
     void transit(int dif) {
         if (idx + dif < 0) return;
-        if (idx + dif > sceneList.length) return;
+        if (idx + dif >= sceneList.length) return;
         if (running) return;
 
         idx += dif;
@@ -156,7 +159,6 @@ void main() {
             start();
         }
     });
-
 
     Canvas windowCanvas;
     with (CanvasBuilder()) {
