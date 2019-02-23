@@ -1,0 +1,187 @@
+import std.algorithm : each;
+import sbylib.math;
+import sbylib.graphics;
+import sbylib.wrapper.gl;
+import sbylib.wrapper.glfw;
+import scene0 : createScene0;
+
+void main() {
+
+    initializeSobaya();
+
+    with (WindowBuilder) {
+        width = 800.pixel;
+        height = 600.pixel;
+        title = "po";
+        resizable = false;
+        contextVersionMajor = 4;
+        contextVersionMinor = 5;
+    }
+
+    auto window = WindowBuilder.buildWindow();
+    scope(exit) window.destroy();
+    window.makeCurrent();
+
+    import std.conv : to;
+    when(Frame).run({ window.title = mouse.pos.to!string; });
+
+    GL.initialize(); // must be called after activating context
+
+    when(KeyButton.Escape.pressed)
+        .run({window.shouldClose = true;});
+
+    static class ColorMaterial : Material {
+
+        mixin VertexShaderSource!(q{
+            #version 450
+            in vec4 position;
+            uniform mat4 worldMatrix;
+
+            void main() {
+                gl_Position = worldMatrix * position;
+            }
+        });
+
+        mixin FragmentShaderSource!(q{
+            #version 450
+            uniform vec3 color;
+            out vec4 fragColor;
+            
+            void main() {
+                fragColor = vec4(color, 1);
+            }
+        });
+    }
+
+    static class TriangleButton : Entity {
+        mixin ImplPos;
+        mixin ImplRot;
+        mixin ImplScale;
+        mixin ImplWorldMatrix;
+        mixin Material!(ColorMaterial);
+        mixin ImplBuilder;
+        mixin ImplUniform;
+    }
+
+    TriangleButton[] triangleList;
+    with (TriangleButton.Builder()) {
+        geometry = GeometryLibrary().buildTriangle().rotate(-90.deg);
+        color = vec3(0.8);
+        auto triangle = build();
+        triangle.pos.x = -0.7;
+        triangle.pos.y = -0.8;
+        triangleList ~= triangle;
+    }
+    with (TriangleButton.Builder()) {
+        geometry = GeometryLibrary().buildTriangle().rotate(90.deg);
+        color = vec3(0.8);
+        auto triangle = build();
+        triangle.pos.x = +0.7;
+        triangle.pos.y = -0.8;
+        triangleList ~= triangle;
+    }
+
+    triangleList.each!((triangle) {
+        when(triangle.beforeRender).run({triangle.size = [100.pixel, 100.pixel];});
+    });
+
+    Scene[] sceneList;
+    sceneList ~= createScene0;
+    sceneList ~= createScene0;
+
+    foreach (i; 0..sceneList.length) {
+        sceneList[i].pos.x = i * 2;
+    }
+
+    auto idx = 0;
+    bool running = false;
+    void transit(int dif) {
+        if (idx + dif < 0) return;
+        if (idx + dif > sceneList.length) return;
+        if (running) return;
+
+        idx += dif;
+        Color[2] colors = dif == -1 ? [Color.White, Color.Gray] : [Color.Gray, Color.White];
+        foreach (i; 0..2) {
+            with (AnimationBuilder()) {
+                animate(triangleList[i].color)
+                .to(colors[i].toVector.rgb)
+                .interpolate(Interpolate.SmoothInOut)
+                .period(400.msecs);
+
+                wait(400.msecs);
+
+                animate(triangleList[i].color)
+                .to(vec3(0.8))
+                .interpolate(Interpolate.SmoothInOut)
+                .period(200.msecs);
+
+                start();
+            }
+        }
+
+        foreach (i, scene; sceneList) {
+            with (AnimationBuilder()) {
+                const arrivalX = (cast(int)i - cast(int)idx) * 2;
+                animate(scene.pos.x)
+                .to(arrivalX)
+                .interpolate(Interpolate.SmoothInOut)
+                .period(1.seconds);
+
+                start();
+            }
+        }
+    }
+
+    void start() {
+        if (running) return;
+        running = true;
+        sceneList[idx].context.bind();
+    }
+
+    void stop() {
+        if (!running) return;
+        running = false;
+        sceneList[idx].context.unbind();
+    }
+
+    when(KeyButton.Left.pressed).run({ transit(-1); });
+    when(KeyButton.Right.pressed).run({ transit(+1); });
+    when(MouseButton.Button1.pressed).run({
+        if (window.cursorMode == CursorMode.Disabled) {
+            window.cursorMode = CursorMode.Normal;
+            stop();
+        } else {
+            window.cursorMode = CursorMode.Disabled;
+            start();
+        }
+    });
+
+
+    Canvas windowCanvas;
+    with (CanvasBuilder()) {
+        size = window.size;
+        color.clear = Color.Gray;
+        windowCanvas = build(window);
+    }
+
+    when(Frame).run({
+        with (windowCanvas.getContext()) {
+            clear(ClearMode.Color, ClearMode.Depth);
+            sceneList.each!(scene => scene.render());
+            triangleList.each!(triangle => triangle.render());
+        }
+    });
+
+    while (window.shouldClose == false) {
+        FrameEventWatcher.update();
+        window.swapBuffers();
+        GLFW.pollEvents();
+    }
+}
+
+abstract class Scene : Renderable {
+    vec2 pos = vec2(0);
+    EventContext context;
+}
+
