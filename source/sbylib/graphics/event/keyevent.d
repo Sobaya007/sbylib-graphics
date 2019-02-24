@@ -44,7 +44,7 @@ static:
     private void use() {
         if (initialized) return;
         initialized = true;
-        Window.getCurrentWindow().setKeyCallback!(keyCallback);
+        Window.getCurrentWindow().setKeyCallback!(keyCallback, (Exception e) { assert(false, e.toString()); });
     }
 
     private KeyCallback add(KeyCallback callback) {
@@ -60,13 +60,9 @@ static:
         callbackList.linearRemove(callbackList[].find(callback).take(1));
     }
 
-    void keyCallback(Window window, KeyButton button, int scanCode, ButtonState state, BitFlags!ModKeyButton mods) nothrow {
-        try {
-            foreach (cb; callbackList) {
-                cb(window, button, scanCode, state, mods);
-            }
-        } catch (Exception e) {
-            assert(false, e.toString);
+    void keyCallback(Window window, KeyButton button, int scanCode, ButtonState state, BitFlags!ModKeyButton mods) {
+        foreach (cb; callbackList) {
+            cb(window, button, scanCode, state, mods);
         }
     }
 }

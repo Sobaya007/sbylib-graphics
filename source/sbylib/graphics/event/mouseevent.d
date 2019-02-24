@@ -108,9 +108,11 @@ static:
     private void use() {
         if (initialized) return;
         initialized = true;
-        Window.getCurrentWindow().setMouseEnterCallback!(enterCallback);
-        Window.getCurrentWindow().setMousePosCallback!(posCallback);
-        Window.getCurrentWindow().setMouseButtonCallback!(buttonCallback);
+
+        alias errorHandler = (Exception e) { assert(false, e.toString()); };
+        Window.getCurrentWindow().setMouseEnterCallback!(enterCallback, errorHandler);
+        Window.getCurrentWindow().setMousePosCallback!(posCallback, errorHandler);
+        Window.getCurrentWindow().setMouseButtonCallback!(buttonCallback, errorHandler);
     }
 
     private MouseEnterCallback add(MouseEnterCallback callback) {
@@ -126,13 +128,9 @@ static:
         enterCallbackList.linearRemove(enterCallbackList[].find(callback).take(1));
     }
 
-    void enterCallback(Window window, bool enter) nothrow {
-        try {
-            foreach (cb; enterCallbackList) {
-                cb(window, enter);
-            }
-        } catch (Exception e) {
-            assert(false, e.toString);
+    void enterCallback(Window window, bool enter) {
+        foreach (cb; enterCallbackList) {
+            cb(window, enter);
         }
     }
 
@@ -149,13 +147,9 @@ static:
         posCallbackList.linearRemove(posCallbackList[].find(callback).take(1));
     }
 
-    void posCallback(Window window, double[2] pos) nothrow {
-        try {
-            foreach (cb; posCallbackList) {
-                cb(window, pos);
-            }
-        } catch (Exception e) {
-            assert(false, e.toString);
+    void posCallback(Window window, double[2] pos) {
+        foreach (cb; posCallbackList) {
+            cb(window, pos);
         }
     }
 
@@ -172,13 +166,9 @@ static:
         buttonCallbackList.linearRemove(buttonCallbackList[].find(callback).take(1));
     }
 
-    void buttonCallback(Window window, MouseButton button, ButtonState state, BitFlags!ModKeyButton mods) nothrow {
-        try {
-            foreach (cb; buttonCallbackList) {
-                cb(window, button, state, mods);
-            }
-        } catch (Exception e) {
-            assert(false, e.toString);
+    void buttonCallback(Window window, MouseButton button, ButtonState state, BitFlags!ModKeyButton mods) {
+        foreach (cb; buttonCallbackList) {
+            cb(window, button, state, mods);
         }
     }
 }

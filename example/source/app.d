@@ -1,4 +1,5 @@
 import std.algorithm : each;
+import std.conv : to;
 import sbylib.math;
 import sbylib.graphics;
 import sbylib.wrapper.gl;
@@ -24,8 +25,7 @@ void main() {
     scope(exit) window.destroy();
     window.makeCurrent();
 
-    import std.conv : to;
-    when(Frame).run({ window.title = mouse.pos.to!string; });
+    when(mouse.moved).run({ window.title = mouse.pos.to!string; });
 
     when(KeyButton.Escape.pressed)
         .run({window.shouldClose = true;});
