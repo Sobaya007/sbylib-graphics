@@ -3,7 +3,7 @@ module sbylib.graphics.event.mouseevent;
 public import sbylib.wrapper.glfw : MouseButton, ButtonState, ModKeyButton;
 public import sbylib.math : vec2;
 
-import sbylib.graphics.event.event : Event;
+import sbylib.graphics.event.event : VoidEvent;
 import sbylib.wrapper.glfw : Window;
 import std.container : Array;
 import std.typecons : BitFlags;
@@ -12,43 +12,43 @@ private alias MouseEnterCallback = void delegate(Window, bool);
 private alias MousePosCallback = void delegate(Window, double[2]);
 private alias MouseButtonCallback = void delegate(Window, MouseButton, ButtonState, BitFlags!ModKeyButton);
 
-private struct MouseEnterCondition {}
-private struct MouseLeaveCondition {}
-private struct MousePosCondition {}
-private struct MouseButtonCondition {
+private struct MouseEnterNotification {}
+private struct MouseLeaveNotification {}
+private struct MousePosNotification {}
+private struct MouseButtonNotification {
     MouseButton button;
     ButtonState state;
 }
 
 private struct Mouse {
-    MouseEnterCondition entered() { return MouseEnterCondition(); }
-    MouseLeaveCondition left() { return MouseLeaveCondition(); }
-    MousePosCondition moved() { return MousePosCondition(); }
+    MouseEnterNotification entered() { return MouseEnterNotification(); }
+    MouseLeaveNotification left() { return MouseLeaveNotification(); }
+    MousePosNotification moved() { return MousePosNotification(); }
     vec2 pos() { return vec2(Window.getCurrentWindow().mousePos); }
 }
 
 Mouse mouse() { return Mouse(); }
 
-MouseButtonCondition pressed(MouseButton mouse) {
-    return MouseButtonCondition(mouse, ButtonState.Press);
+MouseButtonNotification pressed(MouseButton mouse) {
+    return MouseButtonNotification(mouse, ButtonState.Press);
 }
 
-MouseButtonCondition released(MouseButton mouse) {
-    return MouseButtonCondition(mouse, ButtonState.Release);
+MouseButtonNotification released(MouseButton mouse) {
+    return MouseButtonNotification(mouse, ButtonState.Release);
 }
 
 auto pressing(MouseButton mouse) {
-    import sbylib.graphics.event.frameevent : Frame_t;
-    return Frame_t(() => Window.getCurrentWindow().getMouse(mouse) == ButtonState.Press);
+    import sbylib.graphics.event.frameevent : FrameNotification;
+    return FrameNotification(() => Window.getCurrentWindow().getMouse(mouse) == ButtonState.Press);
 }
 
-Event when(MouseEnterCondition condition) {
+VoidEvent when(MouseEnterNotification condition) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
+    auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, bool entered) {
         if (!entered) return;
-        event.call();
+        event.fire();
     });
     when(event.finish).run({
         MouseEventWatcher.remove(cb);
@@ -56,13 +56,13 @@ Event when(MouseEnterCondition condition) {
     return event;
 }
 
-Event when(MouseLeaveCondition condition) {
+VoidEvent when(MouseLeaveNotification condition) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
+    auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, bool entered) {
         if (entered) return;
-        event.call();
+        event.fire();
     });
     when(event.finish).run({
         MouseEventWatcher.remove(cb);
@@ -70,12 +70,12 @@ Event when(MouseLeaveCondition condition) {
     return event;
 }
 
-Event when(MousePosCondition condition) {
+VoidEvent when(MousePosNotification condition) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
+    auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, double[2]) {
-        event.call();
+        event.fire();
     });
     when(event.finish).run({
         MouseEventWatcher.remove(cb);
@@ -83,14 +83,14 @@ Event when(MousePosCondition condition) {
     return event;
 }
 
-Event when(MouseButtonCondition condition) {
+VoidEvent when(MouseButtonNotification condition) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
+    auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, MouseButton button, ButtonState state, BitFlags!ModKeyButton) {
         if (button != condition.button) return;
         if (state != condition.state) return;
-        event.call();
+        event.fire();
     });
     when(event.finish).run({
         MouseEventWatcher.remove(cb);

@@ -1,7 +1,7 @@
-module sbylib.graphics.renderable;
+module sbylib.graphics.render.renderable;
 
 import std.container : Array;
-import sbylib.graphics.event : Event;
+import sbylib.graphics.event : VoidEvent;
 
 private alias RenderCallback = void delegate();
 private struct RenderCondition { Renderable renderable; }
@@ -35,13 +35,13 @@ abstract class Renderable {
     }
 }
 
-Event when(RenderCondition condition) {
+VoidEvent when(RenderCondition condition) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
+    auto event = new VoidEvent;
     RenderCallback cb;
     cb = condition.renderable.add({
-        event.call();
+        event.fire();
     });
     when(event.finish).run({
         condition.renderable.remove(cb);

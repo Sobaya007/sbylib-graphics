@@ -13,18 +13,18 @@ class PerspectiveCamera : Camera {
         import sbylib.math : mat4;
         return mat4.perspective(aspect, fov, near, far);
     }
-}
 
-struct PerspectiveCameraBuilder {
-    float near, far, aspect;
-    Angle fov;
-
-    PerspectiveCamera build() {
-        auto result = new PerspectiveCamera;
-        result.near = near;
-        result.far = far;
-        result.aspect = aspect;
-        result.fov = fov;
-        return result;
+    static struct Builder {
+        float near, far, aspect;
+        Angle fov;
+    
+        PerspectiveCamera build() {
+            auto result = new PerspectiveCamera;
+            result.near = near;
+            result.far = far;
+            result.aspect = aspect;
+            result.fov = fov;
+            return result;
+        }
     }
 }

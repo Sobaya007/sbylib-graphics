@@ -1,6 +1,7 @@
 module sbylib.graphics.event;
 
 public:
+import sbylib.graphics.event.charevent;
 import sbylib.graphics.event.event;
 import sbylib.graphics.event.eventcontext;
 import sbylib.graphics.event.frameevent;

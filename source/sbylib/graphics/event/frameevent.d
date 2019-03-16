@@ -1,24 +1,22 @@
 module sbylib.graphics.event.frameevent;
 
-public import sbylib.graphics.event.event : Event;
+public import sbylib.graphics.event.event : VoidEvent;
 import std.typecons : Typedef;
 import std.container : Array;
 
 private alias FrameCallback = void delegate();
 
-struct Frame_t {
-    private bool delegate() condition;
-}
+struct FrameNotification { private bool delegate() condition; }
 
-Frame_t Frame;
+FrameNotification Frame;
 
-Event when(Frame_t frame) {
+VoidEvent when(FrameNotification frame) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
+    auto event = new VoidEvent;
     auto cb = FrameEventWatcher.add({
         if (frame.condition && frame.condition() == false) return;
-        event.call();
+        event.fire();
     });
     when(event.finish).run({
         FrameEventWatcher.remove(cb);

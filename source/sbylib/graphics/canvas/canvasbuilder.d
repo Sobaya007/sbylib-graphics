@@ -2,6 +2,7 @@ module sbylib.graphics.canvas.canvasbuilder;
 
 public import sbylib.graphics.canvas.canvas : Canvas;
 public import sbylib.graphics.util.color : Color;
+public import sbylib.wrapper.gl : Texture;
 public import sbylib.wrapper.glfw : Window;
 
 struct CanvasBuilder {
@@ -20,24 +21,34 @@ struct CanvasBuilder {
         StencilChannel stencilChannel;
 
         if (color.enable) {
-            colorChannel = new ColorChannel(size);
+            colorChannel = color.texture ? new ColorChannel(color.texture) : new ColorChannel(size);
             colorChannel.clear = color.clear;
+            assert(colorChannel.texture.width == size[0]);
+            assert(colorChannel.texture.height == size[1]);
         }
 
         if (depth.enable) {
-            depthChannel = new DepthChannel(size);
+            depthChannel = depth.texture ? new DepthChannel(depth.texture) : new DepthChannel(size);
             depthChannel.clear = depth.clear;
+            assert(depthChannel.texture.width == size[0]);
+            assert(depthChannel.texture.height == size[1]);
         }
 
         if (stencil.enable) {
-            stencilChannel = new StencilChannel(size);
+            stencilChannel = stencil.texture ? new StencilChannel(stencil.texture) : new StencilChannel(size);
             stencilChannel.clear = stencil.clear;
+            assert(stencilChannel.texture.width == size[0]);
+            assert(stencilChannel.texture.height == size[1]);
         }
 
         return new Canvas(size, colorChannel, depthChannel, stencilChannel, new Framebuffer);
     }
 
-    Canvas build(Window window) {
+    Canvas build(Window window) 
+        in (color.texture is null)
+        in (depth.texture is null)
+        in (stencil.texture is null)
+    {
 
         import sbylib.graphics.canvas.canvaschannel : ColorChannel, DepthChannel, StencilChannel;
         import sbylib.wrapper.gl : DefaultFramebuffer;
@@ -51,11 +62,15 @@ struct CanvasBuilder {
         auto stencilChannel = new StencilChannel(window.size);
         stencilChannel.clear = stencil.clear;
 
-        return new Canvas(window.size, colorChannel, depthChannel, stencilChannel, DefaultFramebuffer);
+        if (size == typeof(size).init)
+            size = window.size;
+
+        return new Canvas(size, colorChannel, depthChannel, stencilChannel, DefaultFramebuffer);
     }
 }
 
 struct ChannelConfig(T) {
     T clear;
     bool enable;
+    Texture texture;
 }

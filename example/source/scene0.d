@@ -57,7 +57,7 @@ Scene createScene0() {
             }
 
             Camera camera;
-            with (PerspectiveCameraBuilder()) {
+            with (PerspectiveCamera.Builder()) {
                 near = 0.01;
                 far = 10.0;
                 fov = 60.deg;
@@ -147,16 +147,16 @@ Scene createScene0() {
                 tex = canvas.color.texture;
 
                 auto picture = build();
-                picture.size = Resolution;
+                picture.pixelSize = Resolution;
                 when(picture.beforeRender).run({ picture.pos.xy = pos; });
 
                 this.picture = picture;
 
                 auto scale = picture.scale;
                 when(context.bound).run({
-                    with (AnimationBuilder()) {
+                    with (ActionSequence()) {
                         animate(picture.scale)
-                        .to(vec3(1))
+                        .to(vec3(2))
                         .interpolate(Interpolate.SmoothInOut)
                         .period(400.msecs);
 
@@ -165,7 +165,7 @@ Scene createScene0() {
                 });
 
                 when(context.unbound).run({
-                    with (AnimationBuilder()) {
+                    with (ActionSequence()) {
                         animate(picture.scale)
                         .to(scale)
                         .interpolate(Interpolate.SmoothInOut)

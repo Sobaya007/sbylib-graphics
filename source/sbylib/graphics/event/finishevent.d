@@ -1,19 +1,18 @@
 module sbylib.graphics.event.finishevent;
 
-public import sbylib.graphics.event.event : Event;
+public import sbylib.graphics.event.event : VoidEvent, Event;
 
-struct Finish {
-    Event event;
+private struct FinishNotification(Args...) { Event!(Args) event; }
+
+auto finish(Args...)(Event!(Args) event) {
+    return FinishNotification!(Args)(event);
 }
 
-auto finish(Event event) {
-    return Finish(event);
-}
-
-Event when(Finish finish) {
-    auto event = new Event;
+VoidEvent when(Args...)(FinishNotification!(Args) finish) {
+    auto event = new VoidEvent;
+    event.context = null;
     finish.event.addFinishCallback({
-        event.call();
+        event.fire();
     });
     return event;
 }

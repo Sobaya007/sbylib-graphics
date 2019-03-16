@@ -10,18 +10,17 @@ import scene2 : createScene2;
 
 void main() {
 
-    initializeSobaya();
-
-    with (WindowBuilder) {
+    Window window;
+    with (WindowBuilder()) {
         width = 800.pixel;
         height = 600.pixel;
         title = "po";
         resizable = false;
         contextVersionMajor = 4;
         contextVersionMinor = 5;
+        window = buildWindow();
     }
 
-    auto window = WindowBuilder.buildWindow();
     scope(exit) window.destroy();
     window.makeCurrent();
 
@@ -84,7 +83,7 @@ void main() {
     }
 
     triangleList.each!((triangle) {
-        when(triangle.beforeRender).run({triangle.size = [100.pixel, 100.pixel];});
+        when(triangle.beforeRender).run({triangle.pixelSize = [50.pixel, 50.pixel];});
     });
 
     static class TextMaterial : Material {
@@ -131,8 +130,8 @@ void main() {
             tex = build();
         }
         textBox = build();
-        textBox.pos = [0.pixel, (window.height - 100).pixel];
-        textBox.size = [tex.width.pixel, tex.height.pixel];
+        textBox.pixelPos = [0.pixel, (window.height/2 - 50).pixel];
+        textBox.pixelSize = [tex.width.pixel, tex.height.pixel];
         textBox.scale *= 0.5;
         textBox.blend = true;
     }
@@ -160,12 +159,12 @@ void main() {
             text = idx.to!dstring;
             textBox.tex = build();
         }
-        textBox.size = [textBox.tex.width.pixel, textBox.tex.height.pixel];
+        textBox.pixelSize = [textBox.tex.width.pixel, textBox.tex.height.pixel];
         textBox.scale *= 0.5;
 
         Color[2] colors = dif == -1 ? [Color.White, Color.Gray] : [Color.Gray, Color.White];
         foreach (i; 0..2) {
-            with (AnimationBuilder()) {
+            with (ActionSequence()) {
                 animate(triangleList[i].color)
                 .to(colors[i].toVector.rgb)
                 .interpolate(Interpolate.SmoothInOut)
@@ -183,7 +182,7 @@ void main() {
         }
 
         foreach (i, scene; sceneList) {
-            with (AnimationBuilder()) {
+            with (ActionSequence()) {
                 const arrivalX = (cast(int)i - cast(int)idx) * 2;
                 animate(scene.pos.x)
                 .to(arrivalX)

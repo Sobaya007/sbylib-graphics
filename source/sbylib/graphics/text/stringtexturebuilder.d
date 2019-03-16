@@ -3,7 +3,7 @@ module sbylib.graphics.text.stringtexturebuilder;
 public import sbylib.wrapper.gl : Texture;
 import sbylib.graphics.geometry.geometry : IGeometry;
 import sbylib.graphics.material.material : Material, uniform;
-import sbylib.graphics.entity.entity : Entity;
+import sbylib.graphics.render.entity : Entity;
 import sbylib.graphics.util.unit : Pixel, pixel;
 import sbylib.math : Vector;
 
@@ -12,21 +12,40 @@ struct StringTextureBuilder {
     string font;
     dstring text;
 
+    Pixel[] widthList(Pixel h) {
+        import std.algorithm : map;
+        import std.array : array;
+        import sbylib.graphics.text.chartexturebuilder : CharTextureBuilder;
+
+        return text.map!((c) {
+            with (CharTextureBuilder()) {
+                font = this.font;
+                height = h;
+                character = c;
+                auto advance = pixel(cast(int)build().advance);
+                return advance;
+            }
+        }).array;
+    }
+
     Texture build() {
         import sbylib.graphics.canvas.canvas : Canvas;
         import sbylib.graphics.canvas.canvasbuilder : CanvasBuilder;
         import sbylib.graphics.canvas.canvascontext : getContext;
         import sbylib.graphics.text.chartexturebuilder : CharTextureBuilder;
         import sbylib.graphics.util.color: Color;
+        import sbylib.graphics.util.unit: pixel;
         import sbylib.math : vec2;
         import sbylib.wrapper.gl : TextureBuilder, ClearMode;
         import std.algorithm : map, sum, minElement, maxElement;
         import std.array : array;
 
+        enum Height = 128.pixel;
         auto characterList = text.map!((c) {
             with (CharTextureBuilder()) {
                 font = this.font;
                 character = c;
+                height = Height;
                 return build();
             }
         }).array;
@@ -37,7 +56,7 @@ struct StringTextureBuilder {
         Canvas canvas;
         with (CanvasBuilder()) {
             const width = cast(int)characterList.map!(c => c.width).sum;
-            size = [width, CharTextureBuilder.height];
+            size = [width, Height];
             color.enable = true;
             color.clear = Color(0);
 

@@ -2,12 +2,8 @@ module sbylib.graphics.canvas.canvaschannel;
 
 public import sbylib.math : vec4;
 public import sbylib.graphics.util.color : Color;
-public import sbylib.wrapper.gl : Texture, FramebufferAttachType;
-
-struct ChannelConfig(T) {
-    T clear;
-    bool enable;
-}
+public import sbylib.wrapper.gl : Texture, TextureTarget, TextureInternalFormat, FramebufferAttachType;
+import std.algorithm : among;
 
 class ColorChannel {
 
@@ -16,7 +12,12 @@ class ColorChannel {
     Texture texture;
     Color clear = Color.Black;
 
-    this() {}
+    this(Texture texture) 
+        in (texture.target == TextureTarget.Tex2D)
+        in (!texture.internalFormat.among(TextureInternalFormat.Depth, TextureInternalFormat.Stencil))
+    {
+        this.texture = texture;
+    }
 
     this(int[2] size) {
         import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
@@ -38,6 +39,10 @@ class ColorChannel {
 
         GlFunction.clearColor(clear.r, clear.g, clear.b, clear.a);
     }
+
+    void destroy() {
+        this.texture.destroy();
+    }
 }
 
 class DepthChannel {
@@ -47,7 +52,12 @@ class DepthChannel {
     Texture texture;
     float clear = 1;
 
-    this() {}
+    this(Texture texture) 
+        in (texture.target == TextureTarget.Tex2D)
+        in (texture.internalFormat == TextureInternalFormat.Depth)
+    {
+        this.texture = texture;
+    }
 
     this(int[2] size) {
         import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
@@ -69,6 +79,10 @@ class DepthChannel {
 
         GlFunction.clearDepth(clear);
     }
+
+    void destroy() {
+        this.texture.destroy();
+    }
 }
 
 class StencilChannel {
@@ -78,7 +92,12 @@ class StencilChannel {
     Texture texture;
     int clear = 0;
 
-    this() {}
+    this(Texture texture) 
+        in (texture.target == TextureTarget.Tex2D)
+        in (texture.internalFormat == TextureInternalFormat.Stencil)
+    {
+        this.texture = texture;
+    }
 
     this(int[2] size) {
         import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
@@ -99,5 +118,9 @@ class StencilChannel {
         import sbylib.wrapper.gl : GlFunction;
 
         GlFunction.clearStencil(clear);
+    }
+
+    void destroy() {
+        this.texture.destroy();
     }
 }

@@ -58,7 +58,7 @@ Scene createScene2() {
             with (Triangle.Builder()) {
                 geometry = GeometryLibrary().buildTriangle();
                 triangle = build();
-                when(triangle.beforeRender).run({ triangle.size = [256.pixel, 256.pixel]; });
+                when(triangle.beforeRender).run({ triangle.pixelSize = [256.pixel, 256.pixel]; });
                 when(triangle.beforeRender).run({ triangle.rotate(1.deg); });
                 auto colorAngle = 0.deg;
                 when(triangle.beforeRender).run({ colorAngle += 0.1.deg; });
@@ -121,7 +121,7 @@ Scene createScene2() {
             }
 
             Camera camera;
-            with (PerspectiveCameraBuilder()) {
+            with (PerspectiveCamera.Builder()) {
                 near = 0.01;
                 far = 10.0;
                 fov = 60.deg;
@@ -211,16 +211,16 @@ Scene createScene2() {
                 tex = canvas.color.texture;
 
                 auto picture = build();
-                picture.size = Resolution;
+                picture.pixelSize = Resolution;
                 when(picture.beforeRender).run({ picture.pos.xy = pos; });
 
                 this.picture = picture;
 
                 auto scale = picture.scale;
                 when(context.bound).run({
-                    with (AnimationBuilder()) {
+                    with (ActionSequence()) {
                         animate(picture.scale)
-                        .to(vec3(1))
+                        .to(vec3(2))
                         .interpolate(Interpolate.SmoothInOut)
                         .period(400.msecs);
 
@@ -229,7 +229,7 @@ Scene createScene2() {
                 });
 
                 when(context.unbound).run({
-                    with (AnimationBuilder()) {
+                    with (ActionSequence()) {
                         animate(picture.scale)
                         .to(scale)
                         .interpolate(Interpolate.SmoothInOut)

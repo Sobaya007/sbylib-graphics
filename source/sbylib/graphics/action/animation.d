@@ -1,18 +1,21 @@
-module sbylib.graphics.animation.animation;
+module sbylib.graphics.action.animation;
 
 public import std.datetime;
-public import sbylib.graphics.animation.interpolation : Interpolate;
-public import sbylib.graphics.event : Event;
+public import sbylib.graphics.action.interpolation : Interpolation;
+import sbylib.graphics.action.action : IAction, ImplAction;
 
-interface IAnimation {
-    Event start();
-}
-
-class Animation(T) : IAnimation {
+class Animation(T) : IAction {
     private T delegate() getValue;
     private void delegate(T) setValue;
     private void delegate(float) updateFunction;
     private Duration _period;
+
+    mixin ImplAction;
+
+    this(T delegate() getter, void delegate(T) setter) {
+        this.getValue = getter;
+        this.setValue = setter;
+    }
 
     this(ref T value) {
         this.getValue = () => value;
@@ -25,32 +28,37 @@ class Animation(T) : IAnimation {
         Nullable!T departure;
         updateFunction = (float t) {
             if (departure.isNull) departure = getValue().nullable;
-            setValue(departure.get() + (arrival - departure.get()) * t);
+            setValue(T(departure.get() + (arrival - departure.get()) * t));
         };
 
         return this;
     }
 
-    Animation interpolate(Interpolate i) {
+    Animation interpolate(Interpolation i) {
         const b = updateFunction;
         updateFunction = (float t) => b(i(t));
         return this;
     }
 
-    void period(Duration period) {
+    Animation period(Duration period) {
         this._period = period;
+        return this;
     }
 
-    override Event start() {
+    override void start() {
         import std.datetime : Clock;
-        import sbylib.graphics.event : when, run, until, Frame;
+        import sbylib.graphics.event : when, run, until, Frame, finish;
 
         auto starttime = Clock.currTime;
 
-        return when(Frame).run({
+        auto event = when(Frame).run({
             auto t = cast(float)(Clock.currTime - starttime).total!("msecs") / _period.total!("msecs");
             updateFunction(t);
         })
-        .until(() => Clock.currTime > starttime + _period);
+        .until(() => Clock.currTime > starttime + _period || killed);
+
+        when(event.finish).run({
+            this.notifyFinish();
+        });
     }
 }

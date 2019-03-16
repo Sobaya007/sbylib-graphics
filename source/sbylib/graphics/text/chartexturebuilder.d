@@ -1,31 +1,36 @@
-module sbylib.graphics.text.chartexturebuilder;
-
-import sbylib.graphics.util.unit : pixel;
+module sbylib.graphics.text.chartexturebuilder; 
+public import sbylib.wrapper.gl : Texture;
+import sbylib.graphics.util.unit : Pixel, pixel;
 import sbylib.wrapper.freetype : Font;
+
+struct Glyph {
+    dchar character;
+    long offsetX, offsetY;
+    long width, height;
+    long advance;
+    long maxHeight;
+    Texture texture;
+}
 
 struct CharTextureBuilder {
 
-    enum height = 128.pixel;
-
     string font;
     dchar character;
+    Pixel height = 128.pixel;
 
     auto build() {
-        import sbylib.wrapper.gl : TextureBuilder, Texture, TextureInternalFormat, TextureFormat;
+        import sbylib.wrapper.gl : TextureBuilder, TextureInternalFormat, TextureFormat;
+        import std.typecons : Tuple;
 
-        struct Character {
-            dchar character;
-            long offsetX, offsetY;
-            long width, height;
-            long advance;
-            long maxHeight;
-            Texture texture;
-        }
-        static Character[dchar] result;
+        alias Pair = Tuple!(Font, dchar);
 
-        if (auto r = character in result) return *r;
+        static Glyph[Pair] result;
 
-        auto info = getFont().getLetterInfo(character);
+        auto font = getFont();
+        auto key = Pair(font,character);
+        if (auto r = key in result) return *r;
+
+        auto info = font.getLetterInfo(character);
 
         with (TextureBuilder()) {
             width = cast(uint)info.width;
@@ -34,8 +39,8 @@ struct CharTextureBuilder {
             format = TextureFormat.R;
             unpackAlign = 1;
 
-            return result[character] =
-                Character(info.character,
+            return result[key] =
+                Glyph(info.character,
                     info.offsetX, info.offsetY,
                     info.width, info.height,
                     info.advance,
@@ -46,11 +51,17 @@ struct CharTextureBuilder {
 
     private Font getFont() {
         import sbylib.wrapper.freetype : FontLoader;
+        import std.typecons : Tuple;
 
-        static Font[string] result;
+        alias Pair = Tuple!(string, Pixel);
+        static Font[Pair] result;
+        auto key = Pair(font, height);
 
-        if (auto r = font in result)
+        if (auto r = key in result)
             return *r;
-        return result[font] = FontLoader.load(font, height);
+
+        with (FontLoader()) {
+            return result[key] = load(font, cast(int)height);
+        }
     }
 }

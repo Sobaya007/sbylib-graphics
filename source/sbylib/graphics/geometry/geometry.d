@@ -37,7 +37,7 @@ class Geometry(Attribute, Index = uint) : IGeometry {
 
     private Primitive primitive;
     private Attribute[] _attributeList;
-    private Index[] indexList;
+    private Index[] _indexList;
     private Buffer!Attribute vertexBuffer;
     private Buffer!Index indexBuffer;
     private VertexArray vao;
@@ -45,7 +45,7 @@ class Geometry(Attribute, Index = uint) : IGeometry {
     this(Primitive primitive, Attribute[] attributeList, Index[] indexList) {
         this.primitive = primitive;
         this._attributeList = attributeList;
-        this.indexList = indexList;
+        this._indexList = indexList;
 
         this.vao = new VertexArray;
 
@@ -103,10 +103,8 @@ class Geometry(Attribute, Index = uint) : IGeometry {
         return _attributeList;
     }
 
-    Attribute[] attributeList(Attribute[] _attributeList) {
-        this._attributeList = _attributeList;
-        this.update();
-        return _attributeList;
+    Index[] indexList() {
+        return _indexList;
     }
 
     auto transform(mat3 m) {
@@ -132,13 +130,36 @@ class Geometry(Attribute, Index = uint) : IGeometry {
         return this;
     }
 
+    auto transform(mat4 m) {
+        import std.traits : isInstanceOf, hasUDA;
+
+        foreach (ref attribute; attributeList) {
+            enum Member(string mem) = "attribute."~mem;
+            alias Type(string mem) = typeof(mixin(Member!(mem)));
+
+            static foreach (mem; __traits(allMembers, Attribute)) {
+                static if (isInstanceOf!(Vector, Type!(mem)) && hasUDA!(mixin(Member!(mem)), transformable)) {
+                    static if (Type!(mem).Dimension == 2) {
+                        mixin(Member!(mem)) = (m * vec4(mixin(Member!(mem)), 0, 0)).xy;
+                    } else static if (Type!(mem).Dimension == 3) {
+                        mixin(Member!(mem)) = (m * vec4(mixin(Member!(mem)), 0)).xyz;
+                    } else static if (Type!(mem).Dimension == 4) {
+                        mixin(Member!(mem)) = m * mixin(Member!(mem));
+                    }
+                }
+            }
+        }
+        update();
+        return this;
+    }
+
     auto rotate(Angle angle) {
         import sbylib.math : mat3, vec3;
 
         return this.transform(mat3.axisAngle(vec3(0,0,1), angle));
     }
 
-    private void update() {
+    void update() {
         this.vertexBuffer.sendSubData(_attributeList, BufferTarget.Array);
     }
 

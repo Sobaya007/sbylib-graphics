@@ -1,23 +1,17 @@
 module sbylib.graphics.util.functions;
 
-public import sbylib.graphics.entity.entity : Entity;
 public import sbylib.graphics.geometry.geometry : IGeometry;
 public import sbylib.math;
 
 import std.traits : isAggregateType, FieldTypeTuple, FieldNameTuple;
 
-void initializeSobaya() {
-    import sbylib.wrapper.glfw : GLFW;
-    import sbylib.wrapper.freetype : FreeType;
-
-    GLFW.initialize();
-    FreeType.initialize();
-}
-
-mixin template DefineCachedValue(Type, string attribute, string name, string expression, string[] keys) {
+mixin template DefineCachedValue(Type, string attribute, string name, string expression, string[] keys) 
+    if (keys.length > 0)
+{
 
     import std.format : format;
     import std.traits : isSomeFunction, ReturnType;
+    import std.string : replace;
 
     private alias MemberType(string key) = typeof(mixin(key));
 
@@ -30,7 +24,7 @@ mixin template DefineCachedValue(Type, string attribute, string name, string exp
         }
     }
     static foreach (key; keys) {
-        mixin(format!"%s _%sSavedValue;"(VariableType!(key).stringof, key));
+        mixin(format!"%s _%sSavedValue;"(VariableType!(key).stringof, key.replace(".", "_")));
     }
     mixin(format!"%s _%sSavedValue;"(Type.stringof, name));
 
@@ -38,9 +32,9 @@ mixin template DefineCachedValue(Type, string attribute, string name, string exp
         %s %s %s() {
             bool _shouldUpdate = false;
             static foreach (key; keys) {
-                if (mixin(format!"_%sSavedValue != %s"(key, key))) {
+                if (mixin(format!"_%sSavedValue != %s"(key.replace(".", "_"), key))) {
                     _shouldUpdate = true;
-                    mixin(format!"_%sSavedValue = %s;"(key, key));
+                    mixin(format!"_%sSavedValue = %s;"(key.replace(".", "_"), key));
                 }
             }
             if (_shouldUpdate)
@@ -52,18 +46,54 @@ mixin template DefineCachedValue(Type, string attribute, string name, string exp
 
 mixin template ImplPos() {
     import sbylib.math : vec3;
-    import sbylib.graphics.util : Pixel;
+    import sbylib.graphics.util : Pixel, pixel, ImplPixelX, ImplPixelY;
     import sbylib.wrapper.glfw : Window;
 
-    vec3 _pos = vec3(0);
+    vec3 pos = vec3(0);
 
-    auto ref pos() {
-        return _pos;
+    Pixel[2] pixelPos() {
+        import sbylib.wrapper.gl : GlUtils;
+
+        const viewport = GlUtils.getViewport();
+        return [
+            pixel(cast(int)(pos.x * viewport[2]) / 2),
+            pixel(cast(int)(pos.y * viewport[3]) / 2),
+        ];
     }
 
-    void pos(Pixel[2] pixel) {
+    Pixel[2] pixelPos(Pixel[2] pixel) {
         import sbylib.wrapper.gl : GlUtils;
-        this._pos.xy = vec2(pixel) / vec2(GlUtils.getViewport()[2..$]);
+
+        const viewport = GlUtils.getViewport();
+
+        this.pos.xy = 2 * vec2(pixel) / vec2(viewport[2..$]);
+
+        return pixel;
+    }
+
+    mixin ImplPixelX;
+    mixin ImplPixelY;
+}
+
+mixin template ImplPixelX() {
+    Pixel pixelX() {
+        return this.pixelPos[0];
+    }
+
+    Pixel pixelX(Pixel pixel) {
+        this.pixelPos = [pixel, this.pixelPos[1]];
+        return pixel;
+    }
+}
+
+mixin template ImplPixelY() {
+    Pixel pixelY() {
+        return this.pixelPos[1];
+    }
+
+    Pixel pixelY(Pixel pixel) {
+        this.pixelPos = [this.pixelPos[0], pixel];
+        return pixel;
     }
 }
 
@@ -80,17 +110,55 @@ mixin template ImplRot() {
 
 mixin template ImplScale() {
     import sbylib.math : vec3;
-    import sbylib.graphics.util : Pixel;
+    import sbylib.graphics.util : Pixel, ImplPixelX, ImplPixelY;
 
     vec3 scale = vec3(1);
 
-    void size(Pixel[2] pixel) {
+    Pixel[2] pixelSize(Pixel[2] pixel) {
         import sbylib.wrapper.gl : GlUtils;
-        this.scale.xy = vec2(pixel) / vec2(GlUtils.getViewport()[2..$]);
+
+        this.scale.xy = 2 * vec2(pixel) / vec2(GlUtils.getViewport()[2..$]);
+
+        return pixel;
+    }
+
+    Pixel[2] pixelSize() {
+        import sbylib.wrapper.gl : GlUtils;
+
+        const viewport = GlUtils.getViewport();
+        return [
+            pixel(cast(int)(this.scale.x * viewport[2]) / 2),
+            pixel(cast(int)(this.scale.y * viewport[3]) / 2),
+        ];
+    }
+
+    mixin ImplPixelWidth;
+    mixin ImplPixelHeight;
+}
+
+mixin template ImplPixelWidth() {
+    Pixel pixelWidth() {
+        return this.pixelSize[0];
+    }
+
+    Pixel pixelWidth(Pixel pixel) {
+        this.pixelSize = [pixel, this.pixelSize[1]];
+        return pixel;
     }
 }
 
-mixin template ImplWorldMatrix() {
+mixin template ImplPixelHeight() {
+    Pixel pixelHeight() {
+        return this.pixelSize[1];
+    }
+
+    Pixel pixelHeight(Pixel pixel) {
+        this.pixelSize = [this.pixelSize[0], pixel];
+        return pixel;
+    }
+}
+
+mixin template ImplWorldMatrix(string name = "worldMatrix") {
     import sbylib.graphics.material : uniform;
     import sbylib.graphics.util : DefineCachedValue;
     import std.traits : hasMember;
@@ -103,10 +171,23 @@ mixin template ImplWorldMatrix() {
         (hasPos   ? "pos"   : "vec3(0)",
          hasRot   ? "rot"   : "mat3.identity",
          hasScale ? "scale" : "vec3(1)");
-    private enum key = 
+    enum key = 
           (hasPos   ? ["pos"]   : [])
         ~ (hasRot   ? ["rot"]   : [])
         ~ (hasScale ? ["scale"] : []);
+
+    static if (key.length > 0) {
+        mixin DefineCachedValue!(mat4, "@uniform", name, expression, key);
+    } else {
+        mixin(format!q{@uniform mat4 %s() { return mat4.identity; }}(name));
+    }
+}
+
+mixin template ImplParentalWorldMatrix(alias parent) {
+    mixin ImplWorldMatrix!("_worldMatrix") W;
+
+    private enum expression = "parent.worldMatrix * W._worldMatrix";
+    private enum key = [parent.stringof] ~ "parent.worldMatrix" ~ W.key;
 
     mixin DefineCachedValue!(mat4, "@uniform", "worldMatrix", expression, key);
 }
@@ -129,5 +210,9 @@ mixin template ImplViewMatrix() {
         ~ (hasRot   ? ["rot"]   : [])
         ~ (hasScale ? ["scale"] : []);
 
-    mixin DefineCachedValue!(mat4, "@uniform", "viewMatrix", expression, key);
+    static if (key.length > 0) {
+        mixin DefineCachedValue!(mat4, "@uniform", "viewMatrix", expression, key);
+    } else {
+        @uniform mat4 viewMatrix() { return mat4.identity; }
+    }
 }

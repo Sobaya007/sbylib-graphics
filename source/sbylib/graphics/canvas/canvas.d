@@ -1,7 +1,6 @@
 module sbylib.graphics.canvas.canvas;
-public import sbylib.wrapper.gl : ClearMode;
-public import sbylib.graphics.renderable : Renderable;
-public import sbylib.wrapper.gl : Framebuffer;
+public import sbylib.graphics.render.renderable : Renderable;
+public import sbylib.wrapper.gl : ClearMode, Framebuffer, TextureFilter, BufferBit;
 
 import sbylib.graphics.canvas.canvaschannel : ColorChannel, DepthChannel, StencilChannel;
 
@@ -27,13 +26,30 @@ class Canvas {
         if (stencilChannel) this.fb.attach(stencilChannel.texture, Level, StencilChannel.AttachType);
     }
 
+    void destroy() {
+        if (fb) this.fb.destroy();
+        if (colorChannel) this.colorChannel.destroy();
+        if (depthChannel) this.depthChannel.destroy();
+        if (stencilChannel) this.stencilChannel.destroy();
+    }
+
     void clear(ClearMode[] mode...) {
-        import sbylib.wrapper.gl : GlFunction;
+        import sbylib.wrapper.gl : GlUtils;
 
         if (colorChannel) colorChannel.clearSetting();
         if (depthChannel) depthChannel.clearSetting();
         if (stencilChannel) stencilChannel.clearSetting();
-        GlFunction.clear(mode);
+        GlUtils.clear(mode);
+    }
+
+    void render(Canvas canvas,
+            int srcX0, int srcY0, int srcX1, int srcY1, 
+            int dstX0, int dstY0, int dstX1, int dstY1,
+            TextureFilter filter, BufferBit[] bit...) {
+        this.fb.blitsTo(canvas.fb,
+                srcX0, srcY0, srcX1, srcY1, 
+                dstX0, dstY0, dstX1, dstY1, 
+                filter, bit);
     }
 
     package void bind() {

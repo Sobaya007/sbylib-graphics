@@ -1,39 +1,160 @@
 module sbylib.graphics.event.keyevent;
 public import sbylib.wrapper.glfw : KeyButton, ButtonState, ModKeyButton;
-import sbylib.graphics.event.event : Event;
+import sbylib.graphics.event.event : VoidEvent;
 import sbylib.wrapper.glfw : Window;
 import std.container : Array;
-import std.typecons : BitFlags;
+import std.typecons : BitFlags, Nullable, nullable;
+import std.meta : AliasSeq;
 
 private alias KeyCallback = void delegate(Window, KeyButton, int, ButtonState, BitFlags!ModKeyButton);
-private struct KeyCondition { KeyButton button; ButtonState state; }
 
-KeyCondition pressed(KeyButton key) {
-    return KeyCondition(key, ButtonState.Press);
+private struct KeyButtonWithSpecial {
+    Nullable!KeyButton button;
+    bool[ModKeyButton] mod;
+
+    this(KeyButton button) {
+        this.button = button;
+    }
+
+    this(ModKeyButton button) {
+        this.mod[button] = true;
+    }
+
+    this(KeyButton button, bool[ModKeyButton] mod) {
+        this.button = button;
+        this.mod = mod;
+    }
+
+    this(Nullable!KeyButton button, bool[ModKeyButton] mod) {
+        this.button = button;
+        this.mod = mod;
+    }
+
+    KeyButtonWithSpecial opBinary(string op)(KeyButton key) 
+        if (op == "+")
+    {
+        return KeyButtonWithSpecial(key, this.mod);
+    }
+
+    KeyButtonWithSpecial opBinary(string op)(KeyButtonWithSpecial key) 
+        if (op == "+")
+        in (this.button.isNull || key.button.isNull)
+    {
+        auto mod = this.mod;
+        foreach (modKey, value; key.mod) mod[modKey] = true;
+
+        auto button = this.button;
+        if (!key.button.isNull) button = nullable(key.button);
+        return KeyButtonWithSpecial(button, mod);
+    }
 }
 
-KeyCondition released(KeyButton key) {
-    return KeyCondition(key, ButtonState.Release);
+KeyButtonWithSpecial Ctrl() {
+    return KeyButtonWithSpecial(ModKeyButton.Control);
+}
+
+KeyButtonWithSpecial Shift() {
+    return KeyButtonWithSpecial(ModKeyButton.Shift);
+}
+
+KeyButtonWithSpecial Alt() {
+    return KeyButtonWithSpecial(ModKeyButton.Alt);
+}
+
+KeyButtonWithSpecial Super() {
+    return KeyButtonWithSpecial(ModKeyButton.Super);
+}
+
+private struct KeyNotification {
+    KeyButtonWithSpecial button;
+    ButtonState state; 
+
+    bool judge(KeyButton button, ButtonState state, BitFlags!ModKeyButton mods) {
+        if (button != this.button.button) return false;
+        if (state != this.state) return false;
+        foreach (key, value; this.button.mod) {
+            if (value && !(mods & key)) return false;
+        }
+        return true;
+    }
+}
+
+private struct OrKeyNotification {
+    KeyNotification[] keys;
+
+    bool judge(KeyButton button, ButtonState state, BitFlags!ModKeyButton mods) {
+        foreach (key; keys) {
+            if (key.judge(button, state, mods)) return true;
+        }
+        return false;
+    }
+}
+
+OrKeyNotification or(KeyNotification[] keys...) {
+    typeof(return) result;
+    foreach (key; keys)
+        result.keys ~= key;
+    return result;
+}
+
+private struct AndKeyNotification {
+    KeyNotification[] keys;
+
+    bool judge(KeyButton button, ButtonState state, BitFlags!ModKeyButton mods) {
+        foreach (key; keys) {
+            if (!key.judge(button, state, mods)) return false;
+        }
+        return true;
+    }
+}
+
+AndKeyNotification and(KeyNotification[] keys...) {
+    typeof(return) result;
+    foreach (key; keys)
+        result.keys ~= key;
+    return result;
+}
+
+KeyNotification pressed(KeyButton key) {
+    return KeyNotification(KeyButtonWithSpecial(key), ButtonState.Press);
+}
+
+KeyNotification pressed(KeyButtonWithSpecial button) {
+    return KeyNotification(button, ButtonState.Press);
+}
+
+KeyNotification repeated(KeyButton key) {
+    return KeyNotification(KeyButtonWithSpecial(key), ButtonState.Repeat);
+}
+
+KeyNotification repeated(KeyButtonWithSpecial button) {
+    return KeyNotification(button, ButtonState.Repeat);
+}
+
+KeyNotification released(KeyButton key) {
+    return KeyNotification(KeyButtonWithSpecial(key), ButtonState.Release);
+}
+
+KeyNotification released(KeyButtonWithSpecial button) {
+    return KeyNotification(button, ButtonState.Release);
 }
 
 auto pressing(KeyButton key) {
-    import sbylib.graphics.event.frameevent : Frame_t;
-    return Frame_t(() => Window.getCurrentWindow().getKey(key) == ButtonState.Press);
+    import sbylib.graphics.event.frameevent : FrameNotification;
+    return FrameNotification(() => Window.getCurrentWindow().getKey(key) == ButtonState.Press);
 }
 
-Event when(KeyCondition condition) {
-    import sbylib.graphics.event : when, finish, run;
-
-    auto event = new Event;
-    auto cb = KeyEventWatcher.add((Window, KeyButton button, int, ButtonState state, BitFlags!ModKeyButton) {
-        if (button != condition.button) return;
-        if (state != condition.state) return;
-        event.call();
-    });
-    when(event.finish).run({
-        KeyEventWatcher.remove(cb);
-    });
-    return event;
+static foreach (NotificationType; AliasSeq!(KeyNotification, OrKeyNotification, AndKeyNotification)) {
+    VoidEvent when(NotificationType condition) {
+        import sbylib.graphics.event : when, finish, run;
+    
+        auto event = new VoidEvent;
+        auto cb = KeyEventWatcher.add((Window, KeyButton button, int, ButtonState state, BitFlags!ModKeyButton mods) {
+            if (condition.judge(button, state, mods)) event.fire();
+        });
+        when(event.finish).run({ KeyEventWatcher.remove(cb); });
+        return event;
+    }
 }
 
 private class KeyEventWatcher {
@@ -44,7 +165,13 @@ static:
     private void use() {
         if (initialized) return;
         initialized = true;
-        Window.getCurrentWindow().setKeyCallback!(keyCallback, (Exception e) { assert(false, e.toString()); });
+        Window.getCurrentWindow().setKeyCallback!(
+            keyCallback,
+            (Exception e) {
+                import std.conv : ConvException;
+                if (cast(ConvException)e) return;
+                assert(false, e.toString());
+            });
     }
 
     private KeyCallback add(KeyCallback callback) {

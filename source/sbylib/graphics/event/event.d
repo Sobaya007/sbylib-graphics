@@ -1,32 +1,39 @@
 module sbylib.graphics.event.event;
 
-public import sbylib.wrapper.glfw : KeyButton;
-public import sbylib.graphics.event.eventcontext : EventContext;
+import sbylib.wrapper.glfw : KeyButton;
+import sbylib.graphics.event.eventcontext : EventContext;
 
-private alias Condition = bool delegate();
-private alias Callback = void delegate();
+interface IEvent {
+    void kill();
+}
 
-class Event {
-    private void delegate() callback;
+class Event(Args...) : IEvent {
+    private void delegate(Args) callback;
     private bool delegate() killCondition;
     private void delegate()[] finishCallbackList;
     package EventContext context;
-    private debug bool alive = true;
+    private bool alive = true;
 
     this() {
         context = EventContext.currentContext;
+        if (context)
+            context.eventList ~= this;
     }
 
-    void call() 
-        in (alive)
+    void fire(Args args) 
     {
+        if (!alive) return;
         if (killCondition && killCondition()) {
             this.alive = false;
             foreach (cb; finishCallbackList) cb();
             return;
         }
         if (context && !context.isBound()) return;
-        if (callback) callback();
+        if (callback) callback(args);
+    }
+
+    override void kill() {
+        this.killCondition = () => true;
     }
 
     package void addFinishCallback(void delegate() finishCallback) {
@@ -34,22 +41,24 @@ class Event {
     }
 }
 
-Event run(Event event, void delegate() callback) {
+Event!(Args) run(Args...)(Event!(Args) event, void delegate(Args) callback) {
     event.callback = callback;
     return event;
 }
 
-deprecated Event run(Event event, lazy void callback) { // this makes segmentation fault
-    event.callback = () => callback;
-    return event;
-}
-
-Event until(Event event, bool delegate() condition) {
+Event!(Args) until(Args...)(Event!(Args) event, bool delegate() condition) {
     event.killCondition = condition;
     return event;
 }
 
-deprecated Event until(Event event, lazy bool condition) { // this makes segmentation fault
-    event.until(() => condition);
+Event!(Args) once(Args...)(Event!(Args) event) {
+    bool hasRun;
+    event.killCondition = {
+        if (hasRun) return true;
+        hasRun = true;
+        return false;
+    };
     return event;
 }
+
+alias VoidEvent = Event!();

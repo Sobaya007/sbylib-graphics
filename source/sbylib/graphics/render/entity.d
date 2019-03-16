@@ -1,9 +1,9 @@
-module sbylib.graphics.entity.entity;
+module sbylib.graphics.render.entity;
 
 public import sbylib.math : vec2, vec3, quat, Angle;
 import sbylib.wrapper.gl : BlendFactor;
 import sbylib.wrapper.glfw : Window;
-import sbylib.graphics.renderable : Renderable;
+import sbylib.graphics.render.renderable : Renderable;
 import sbylib.graphics.geometry : IGeometry;
 import sbylib.graphics.material : Mat = Material, uniform;
 import std.format : format;
@@ -15,7 +15,8 @@ class Entity : Renderable {
     protected abstract void setUniform();
 
     bool blend;
-    bool depthTest;
+    bool depthTest = true;
+    bool depthWrite = true;
     BlendFactor srcFactor = BlendFactor.SrcAlpha, dstFactor = BlendFactor.OneMinusSrcAlpha;
 
     IGeometry geometry() {
@@ -35,6 +36,7 @@ class Entity : Renderable {
         this._material.use();
         this.setUniform();
 
+        GlUtils.depthWrite(this.depthWrite);
         GlUtils.depthTest(this.depthTest);
         GlUtils.blend(this.blend);
         GlFunction.blendFunc(this.srcFactor, this.dstFactor);
@@ -44,30 +46,48 @@ class Entity : Renderable {
 
     protected mixin template ImplBuilder() {
         alias This = typeof(this);
-        static struct Builder {
-            IGeometry geometry;
 
-            import std.traits : hasUDA, ReturnType, hasFunctionAttributes;
-            import std.meta : Filter;
-            import std.format : format;
+        import sbylib.graphics.geometry.geometry : IGeometry;
 
+        private enum __memberNames = {
+            import std.traits : hasUDA, hasFunctionAttributes;
+
+            string[] result;
             static foreach (mem; __traits(allMembers, This)) {
                 static if (__traits(compiles, mixin("This."~mem))
                         && hasUDA!(mixin("This."~mem), uniform)
                         && hasFunctionAttributes!(mixin("This."~mem), "ref")) {
-                    mixin(format!"@uniform %s %s;"(ReturnType!(mixin("This."~mem)).stringof, mem));
+                    result ~= mem;
                 }
             }
+            return result;
+        }();
 
-            This build() {
+        static class Builder {
+
+            IGeometry geometry;
+
+            static foreach (mem; __memberNames) {
+                import std.format : format;
+                import std.traits : ReturnType;
+
+                mixin(format!"@uniform %s %s;"(ReturnType!(mixin("This."~mem)).stringof, mem));
+            }
+
+            // to avoid crash in dll
+            static auto opCall() {
+                return new typeof(this)();
+            }
+
+            This build() 
+                in (geometry, "geometry not registered")
+            {
+                import std.format : format;
+
                 auto result = new This;
                 result.geometry = geometry;
-                static foreach (mem; __traits(allMembers, This)) {
-                    static if (__traits(compiles, mixin("This."~mem))
-                            && hasUDA!(mixin("This."~mem), uniform)
-                            && hasFunctionAttributes!(mixin("This."~mem), "ref")) {
-                        mixin(format!"result.%s = this.%s;"(mem, mem));
-                    }
+                static foreach (mem; __memberNames) {
+                    mixin(format!"result.%s = this.%s;"(mem, mem));
                 }
                 return result;
             }

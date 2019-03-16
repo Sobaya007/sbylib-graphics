@@ -1,10 +1,10 @@
 module sbylib.graphics.event.eventcontext;
 
-public import sbylib.graphics.event.event : Event;
+import sbylib.graphics.event.event : IEvent, VoidEvent;
 import std.container : Array;
 
 private alias BindCallback = void delegate();
-private struct BindCondition { EventContext context; bool bind; }
+private struct BindNotification { EventContext context; bool bind; }
 
 class EventContext {
 
@@ -12,7 +12,26 @@ class EventContext {
 
     private Array!BindCallback bindCallbackList;
     private Array!BindCallback unbindCallbackList;
+    package Array!IEvent eventList;
     private bool _bound = false;
+
+    private static int seed = 0;
+
+    int id;
+
+    this() {
+        this.id = seed++;
+    }
+
+    ~this() {
+        kill();
+    }
+
+    void kill() {
+        foreach (e; eventList) {
+            e.kill();
+        }
+    }
 
     void bind() {
         _bound = true;
@@ -35,12 +54,12 @@ class EventContext {
         return ContextRegister();
     }
 
-    BindCondition bound() {
-        return BindCondition(this, true);
+    BindNotification bound() {
+        return BindNotification(this, true);
     }
 
-    BindCondition unbound() {
-        return BindCondition(this, false);
+    BindNotification unbound() {
+        return BindNotification(this, false);
     }
 
     private BindCallback add(BindCallback callback, bool bind) {
@@ -63,11 +82,11 @@ class EventContext {
     }
 }
 
-Event when(BindCondition condition) {
+VoidEvent when(BindNotification condition) {
     import sbylib.graphics.event : when, finish, run;
 
-    auto event = new Event;
-    auto cb = condition.context.add({ event.call(); }, condition.bind);
+    auto event = new VoidEvent;
+    auto cb = condition.context.add({ event.fire(); }, condition.bind);
     when(event.finish).run({
         condition.context.remove(cb, condition.bind);
     });
