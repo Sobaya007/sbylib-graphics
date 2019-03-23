@@ -1,4 +1,5 @@
 module sbylib.graphics.event.keyevent;
+
 public import sbylib.wrapper.glfw : KeyButton, ButtonState, ModKeyButton;
 import sbylib.graphics.event.event : VoidEvent;
 import sbylib.wrapper.glfw : Window;
@@ -155,6 +156,39 @@ static foreach (NotificationType; AliasSeq!(KeyNotification, OrKeyNotification, 
         when(event.finish).run({ KeyEventWatcher.remove(cb); });
         return event;
     }
+}
+
+private struct AnyKey {}
+
+AnyKey Key() {
+    return AnyKey();
+}
+
+private struct AnyKeyNotification {
+    ButtonState state; 
+}
+
+AnyKeyNotification pressed(AnyKey key) {
+    return AnyKeyNotification(ButtonState.Press);
+}
+
+AnyKeyNotification repeated(AnyKey key) {
+    return AnyKeyNotification(ButtonState.Repeat);
+}
+
+AnyKeyNotification released(AnyKey key) {
+    return AnyKeyNotification(ButtonState.Release);
+}
+
+auto when(AnyKeyNotification notification) {
+    import sbylib.graphics.event : Event, when, finish, run;
+
+    auto event = new Event!KeyButton;
+    auto cb = KeyEventWatcher.add((Window, KeyButton button, int, ButtonState state, BitFlags!ModKeyButton mods) {
+        if (notification.state == state) event.fire(button);
+    });
+    when(event.finish).run({ KeyEventWatcher.remove(cb); });
+    return event;
 }
 
 private class KeyEventWatcher {

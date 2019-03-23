@@ -6,13 +6,13 @@ import std.container : Array;
 private alias CharCallback = void delegate(Window, uint);
 
 private struct CharNotification {}
-private struct Key_t {}
+private struct Char_t {}
 
-Key_t Key() {
-    return Key_t();
+Char_t Char() {
+    return Char_t();
 }
 
-CharNotification pressed(Key_t) {
+CharNotification typed(Char_t) {
     return CharNotification();
 }
 
