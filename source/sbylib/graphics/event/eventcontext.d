@@ -83,11 +83,11 @@ class EventContext {
 }
 
 VoidEvent when(BindNotification condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     auto cb = condition.context.add({ event.fire(); }, condition.bind);
-    when(event.finish).run({
+    when(event.finish).then({
         condition.context.remove(cb, condition.bind);
     });
     return event;

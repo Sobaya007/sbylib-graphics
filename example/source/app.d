@@ -24,10 +24,10 @@ void main() {
     scope(exit) window.destroy();
     window.makeCurrent();
 
-    when(mouse.moved).run({ window.title = mouse.pos.to!string; });
+    when(mouse.moved).then({ window.title = mouse.pos.to!string; });
 
     when(KeyButton.Escape.pressed)
-        .run({window.shouldClose = true;});
+        .then({window.shouldClose = true;});
 
     GL.initialize(); // must be called after activating context
 
@@ -83,7 +83,7 @@ void main() {
     }
 
     triangleList.each!((triangle) {
-        when(triangle.beforeRender).run({triangle.pixelSize = [50.pixel, 50.pixel];});
+        when(triangle.beforeRender).then({triangle.pixelSize = [50.pixel, 50.pixel];});
     });
 
     static class TextMaterial : Material {
@@ -206,9 +206,9 @@ void main() {
         sceneList[idx].context.unbind();
     }
 
-    when(KeyButton.Left.pressed).run({ transit(-1); });
-    when(KeyButton.Right.pressed).run({ transit(+1); });
-    when(MouseButton.Button1.pressed).run({
+    when(KeyButton.Left.pressed).then({ transit(-1); });
+    when(KeyButton.Right.pressed).then({ transit(+1); });
+    when(MouseButton.Button1.pressed).then({
         if (window.cursorMode == CursorMode.Disabled) {
             window.cursorMode = CursorMode.Normal;
             stop();
@@ -224,7 +224,7 @@ void main() {
         windowCanvas = build(window);
     }
 
-    when(Frame).run({
+    when(Frame).then({
         with (windowCanvas.getContext()) {
             clear(ClearMode.Color, ClearMode.Depth);
 

@@ -17,12 +17,12 @@ class WaitAction : IAction {
 
     override void start() {
         import std.datetime : Clock;
-        import sbylib.graphics.event : Frame, when, until, finish, run;
+        import sbylib.graphics.event : Frame, when, until, finish, then;
 
         auto starttime = Clock.currTime;
 
         auto wait = when(Frame).until(() => Clock.currTime > starttime + duration || killed);
 
-        when(wait.finish).run({ notifyFinish(); });
+        when(wait.finish).then({ notifyFinish(); });
     }
 }

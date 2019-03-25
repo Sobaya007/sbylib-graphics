@@ -36,14 +36,14 @@ abstract class Renderable {
 }
 
 VoidEvent when(RenderCondition condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     RenderCallback cb;
     cb = condition.renderable.add({
         event.fire();
     });
-    when(event.finish).run({
+    when(event.finish).then({
         condition.renderable.remove(cb);
     });
     return event;

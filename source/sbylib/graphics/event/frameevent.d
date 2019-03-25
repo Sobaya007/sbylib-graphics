@@ -11,14 +11,14 @@ struct FrameNotification { private bool delegate() condition; }
 FrameNotification Frame;
 
 VoidEvent when(FrameNotification frame) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     auto cb = FrameEventWatcher.add({
         if (frame.condition && frame.condition() == false) return;
         event.fire();
     });
-    when(event.finish).run({
+    when(event.finish).then({
         FrameEventWatcher.remove(cb);
     });
     return event;

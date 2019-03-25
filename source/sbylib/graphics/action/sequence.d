@@ -86,10 +86,10 @@ class ActionSequence : IAction {
 
         this(IAction action) { 
             import sbylib.graphics.action.action : when;
-            import sbylib.graphics.event.event : run;
+            import sbylib.graphics.event.event : then;
 
             this.action = action; 
-            when(action.finish).run({
+            when(action.finish).then({
                 if (next is null) {
                     onFinish();
                 } else {

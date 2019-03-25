@@ -147,13 +147,13 @@ auto pressing(KeyButton key) {
 
 static foreach (NotificationType; AliasSeq!(KeyNotification, OrKeyNotification, AndKeyNotification)) {
     VoidEvent when(NotificationType condition) {
-        import sbylib.graphics.event : when, finish, run;
+        import sbylib.graphics.event : when, finish, then;
     
         auto event = new VoidEvent;
         auto cb = KeyEventWatcher.add((Window, KeyButton button, int, ButtonState state, BitFlags!ModKeyButton mods) {
             if (condition.judge(button, state, mods)) event.fire();
         });
-        when(event.finish).run({ KeyEventWatcher.remove(cb); });
+        when(event.finish).then({ KeyEventWatcher.remove(cb); });
         return event;
     }
 }
@@ -181,13 +181,13 @@ AnyKeyNotification released(AnyKey key) {
 }
 
 auto when(AnyKeyNotification notification) {
-    import sbylib.graphics.event : Event, when, finish, run;
+    import sbylib.graphics.event : Event, when, finish, then;
 
     auto event = new Event!KeyButton;
     auto cb = KeyEventWatcher.add((Window, KeyButton button, int, ButtonState state, BitFlags!ModKeyButton mods) {
         if (notification.state == state) event.fire(button);
     });
-    when(event.finish).run({ KeyEventWatcher.remove(cb); });
+    when(event.finish).then({ KeyEventWatcher.remove(cb); });
     return event;
 }
 

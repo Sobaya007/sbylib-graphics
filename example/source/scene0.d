@@ -66,18 +66,18 @@ Scene createScene0() {
                 camera.pos.z = 1.2;
 
                 vec2 basePoint;
-                when(context.bound).run({basePoint = mouse.pos;});
+                when(context.bound).then({basePoint = mouse.pos;});
 
                 with (context()) {
                     enum delta = 0.01;
-                    when(KeyButton.KeyA.pressing).run({ camera.pos -= camera.rot.column[0] * delta; });
-                    when(KeyButton.KeyD.pressing).run({ camera.pos += camera.rot.column[0] * delta; });
-                    when(KeyButton.KeyQ.pressing).run({ camera.pos -= camera.rot.column[1] * delta; });
-                    when(KeyButton.KeyE.pressing).run({ camera.pos += camera.rot.column[1] * delta; });
-                    when(KeyButton.KeyW.pressing).run({ camera.pos -= camera.rot.column[2] * delta; });
-                    when(KeyButton.KeyS.pressing).run({ camera.pos += camera.rot.column[2] * delta; });
+                    when(KeyButton.KeyA.pressing).then({ camera.pos -= camera.rot.column[0] * delta; });
+                    when(KeyButton.KeyD.pressing).then({ camera.pos += camera.rot.column[0] * delta; });
+                    when(KeyButton.KeyQ.pressing).then({ camera.pos -= camera.rot.column[1] * delta; });
+                    when(KeyButton.KeyE.pressing).then({ camera.pos += camera.rot.column[1] * delta; });
+                    when(KeyButton.KeyW.pressing).then({ camera.pos -= camera.rot.column[2] * delta; });
+                    when(KeyButton.KeyS.pressing).then({ camera.pos += camera.rot.column[2] * delta; });
 
-                    when(mouse.moved).run({
+                    when(mouse.moved).then({
                         if (Window.getCurrentWindow().cursorMode == CursorMode.Normal) return;
                         auto dif = (mouse.pos - basePoint) * 0.003;
                         auto angle = dif.length.rad;
@@ -148,12 +148,12 @@ Scene createScene0() {
 
                 auto picture = build();
                 picture.pixelSize = Resolution;
-                when(picture.beforeRender).run({ picture.pos.xy = pos; });
+                when(picture.beforeRender).then({ picture.pos.xy = pos; });
 
                 this.picture = picture;
 
                 auto scale = picture.scale;
-                when(context.bound).run({
+                when(context.bound).then({
                     with (ActionSequence()) {
                         animate(picture.scale)
                         .to(vec3(2))
@@ -164,7 +164,7 @@ Scene createScene0() {
                     }
                 });
 
-                when(context.unbound).run({
+                when(context.unbound).then({
                     with (ActionSequence()) {
                         animate(picture.scale)
                         .to(scale)
@@ -176,7 +176,7 @@ Scene createScene0() {
                 });
             }
 
-            when(this.beforeRender).run({
+            when(this.beforeRender).then({
                 with (canvas.getContext()) {
                     clear(ClearMode.Color, ClearMode.Depth);
                     camera.capture(floor);

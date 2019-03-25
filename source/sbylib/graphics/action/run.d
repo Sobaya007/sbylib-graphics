@@ -12,12 +12,12 @@ class RunAction : IAction {
     mixin ImplAction;
 
     this(void delegate() g) {
-        import sbylib.graphics.event : when, Frame, run, until;
+        import sbylib.graphics.event : when, Frame, then, until;
         this.f = {
             g();
 
             bool executed;
-            when(Frame).run({
+            when(Frame).then({
                 notifyFinish();
                 executed = true;
             }).until(() => executed);

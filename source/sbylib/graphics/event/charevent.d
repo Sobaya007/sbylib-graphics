@@ -17,13 +17,13 @@ CharNotification typed(Char_t) {
 }
 
 Event!(uint) when(CharNotification condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new Event!(uint);
     auto cb = CharEventWatcher.add((Window, uint codepoint) {
         event.fire(codepoint);
     });
-    when(event.finish).run({
+    when(event.finish).then({
         CharEventWatcher.remove(cb);
     });
     return event;

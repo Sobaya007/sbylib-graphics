@@ -47,7 +47,7 @@ class Event(Args...) : IEvent {
     }
 }
 
-Event!(Args) run(Args...)(Event!(Args) event, void delegate(Args) callback) {
+Event!(Args) then(Args...)(Event!(Args) event, void delegate(Args) callback) {
     event.callback = callback;
     return event;
 }

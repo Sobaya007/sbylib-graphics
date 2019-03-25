@@ -43,48 +43,48 @@ auto pressing(MouseButton mouse) {
 }
 
 VoidEvent when(MouseEnterNotification condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, bool entered) {
         if (!entered) return;
         event.fire();
     });
-    when(event.finish).run({
+    when(event.finish).then({
         MouseEventWatcher.remove(cb);
     });
     return event;
 }
 
 VoidEvent when(MouseLeaveNotification condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, bool entered) {
         if (entered) return;
         event.fire();
     });
-    when(event.finish).run({
+    when(event.finish).then({
         MouseEventWatcher.remove(cb);
     });
     return event;
 }
 
 VoidEvent when(MousePosNotification condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, double[2]) {
         event.fire();
     });
-    when(event.finish).run({
+    when(event.finish).then({
         MouseEventWatcher.remove(cb);
     });
     return event;
 }
 
 VoidEvent when(MouseButtonNotification condition) {
-    import sbylib.graphics.event : when, finish, run;
+    import sbylib.graphics.event : when, finish, then;
 
     auto event = new VoidEvent;
     auto cb = MouseEventWatcher.add((Window, MouseButton button, ButtonState state, BitFlags!ModKeyButton) {
@@ -92,7 +92,7 @@ VoidEvent when(MouseButtonNotification condition) {
         if (state != condition.state) return;
         event.fire();
     });
-    when(event.finish).run({
+    when(event.finish).then({
         MouseEventWatcher.remove(cb);
     });
     return event;

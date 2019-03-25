@@ -47,17 +47,17 @@ class Animation(T) : IAction {
 
     override void start() {
         import std.datetime : Clock;
-        import sbylib.graphics.event : when, run, until, Frame, finish;
+        import sbylib.graphics.event : when, then, until, Frame, finish;
 
         auto starttime = Clock.currTime;
 
-        auto event = when(Frame).run({
+        auto event = when(Frame).then({
             auto t = cast(float)(Clock.currTime - starttime).total!("msecs") / _period.total!("msecs");
             updateFunction(t);
         })
         .until(() => Clock.currTime > starttime + _period || killed);
 
-        when(event.finish).run({
+        when(event.finish).then({
             this.notifyFinish();
         });
     }
