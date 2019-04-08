@@ -1,18 +1,36 @@
 module sbylib.graphics.event.finishevent;
 
-public import sbylib.graphics.event.event : VoidEvent, Event;
+public import sbylib.graphics.event.event : VoidEvent, IEvent;
 
-private struct FinishNotification(Args...) { Event!(Args) event; }
+private struct FinishNotification { IEvent event; }
 
-auto finish(Args...)(Event!(Args) event) {
-    return FinishNotification!(Args)(event);
+auto finish(IEvent event) {
+    return FinishNotification(event);
 }
 
-VoidEvent when(Args...)(FinishNotification!(Args) finish) {
+VoidEvent when(FinishNotification finish) {
     auto event = new VoidEvent;
     event.context = null;
     finish.event.addFinishCallback({
         event.fire();
     });
+    return event;
+}
+
+private struct AllFinishNotification { IEvent[] eventList; }
+
+auto allFinish(IEvent[] eventList) {
+    return AllFinishNotification(eventList);
+}
+
+VoidEvent when(AllFinishNotification finish) {
+    auto event = new VoidEvent;
+    event.context = null;
+    auto cnt = finish.eventList.length;
+    foreach (e; finish.eventList) {
+        e.addFinishCallback({
+            if (--cnt == 0) event.fire();
+        });
+    }
     return event;
 }

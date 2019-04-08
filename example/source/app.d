@@ -73,6 +73,7 @@ void main() {
         triangle.pos.y = -0.8;
         triangleList ~= triangle;
     }
+
     with (TriangleButton.Builder()) {
         geometry = GeometryLibrary().buildTriangle().rotate(90.deg);
         color = vec3(0.8);
