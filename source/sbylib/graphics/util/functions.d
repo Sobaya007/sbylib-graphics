@@ -3,6 +3,9 @@ module sbylib.graphics.util.functions;
 public import sbylib.graphics.geometry.geometry : IGeometry;
 public import sbylib.math;
 
+import sbylib.graphics.canvas : Canvas;
+import sbylib.wrapper.gl : Texture;
+
 import std.traits : isAggregateType, FieldTypeTuple, FieldNameTuple;
 
 mixin template DefineCachedValue(Type, string attribute, string name, string expression, string[] keys) 
@@ -215,4 +218,23 @@ mixin template ImplViewMatrix() {
     } else {
         @uniform mat4 viewMatrix() { return mat4.identity; }
     }
+}
+
+void render(Canvas dstCanvas, Texture tex, ivec2 p, ivec2 s) {
+    import sbylib.graphics.canvas : CanvasBuilder;
+    import sbylib.wrapper.gl : TextureFilter, BufferBit;
+
+    static Canvas canvas;
+    if (canvas is null) {
+        with (CanvasBuilder()) {
+            color.enable = true;
+            canvas = build();
+        }
+    }
+    canvas.color.attach(tex);
+
+    dstCanvas.render(canvas,
+        0, 0, tex.width, tex.height,
+        p.x, p.y, p.x + s.x, p.y + s.y,
+        TextureFilter.Linear, BufferBit.Color);
 }

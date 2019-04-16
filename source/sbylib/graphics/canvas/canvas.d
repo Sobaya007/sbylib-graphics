@@ -7,23 +7,14 @@ import sbylib.graphics.canvas.canvaschannel : ColorChannel, DepthChannel, Stenci
 class Canvas {
 
     package Framebuffer fb;
-    private ColorChannel colorChannel;
-    private DepthChannel depthChannel;
-    private StencilChannel stencilChannel;
+    package ColorChannel colorChannel;
+    package DepthChannel depthChannel;
+    package StencilChannel stencilChannel;
     private int[2] _size;
 
-    this(int[2] size, ColorChannel colorChannel, DepthChannel depthChannel, StencilChannel stencilChannel, Framebuffer fb) {
+    this(int[2] size, Framebuffer fb) {
         this._size = size;
-        this.colorChannel = colorChannel;
-        this.depthChannel = depthChannel;
-        this.stencilChannel = stencilChannel;
-
         this.fb = fb;
-        enum Level = 0;
-
-        if (colorChannel) this.fb.attach(colorChannel.texture, Level, ColorChannel.AttachType);
-        if (depthChannel) this.fb.attach(depthChannel.texture, Level, DepthChannel.AttachType);
-        if (stencilChannel) this.fb.attach(stencilChannel.texture, Level, StencilChannel.AttachType);
     }
 
     void destroy() {

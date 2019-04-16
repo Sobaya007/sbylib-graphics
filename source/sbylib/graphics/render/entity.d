@@ -99,7 +99,8 @@ class Entity : Renderable {
     {
         import std.format : format;
         import std.traits : getSymbolsByUDA;
-        import sbylib.graphics.material : Mat = Material;
+        import sbylib.graphics.material : Mat = Material, uniform;
+        import sbylib.wrapper.gl : Texture;
 
         private MaterialType mat;
 

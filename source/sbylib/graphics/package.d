@@ -7,7 +7,7 @@ import sbylib.graphics.canvas;
 import sbylib.graphics.event;
 import sbylib.graphics.geometry;
 import sbylib.graphics.glsl;
+import sbylib.graphics.glyph;
 import sbylib.graphics.material;
 import sbylib.graphics.render;
-import sbylib.graphics.text;
 import sbylib.graphics.util;

@@ -16,32 +16,38 @@ struct CanvasBuilder {
         import sbylib.graphics.canvas.canvaschannel : ColorChannel, DepthChannel, StencilChannel;
         import sbylib.wrapper.gl : Framebuffer;
 
-        ColorChannel colorChannel;
-        DepthChannel depthChannel;
-        StencilChannel stencilChannel;
+        auto fb = new Framebuffer;
+
+        auto result = new Canvas(size, fb);
 
         if (color.enable) {
-            colorChannel = color.texture ? new ColorChannel(color.texture) : new ColorChannel(size);
+            auto colorChannel = color.texture ? new ColorChannel(fb, color.texture) : new ColorChannel(fb, size);
             colorChannel.clear = color.clear;
             assert(colorChannel.texture.width == size[0]);
             assert(colorChannel.texture.height == size[1]);
+
+            result.colorChannel = colorChannel;
         }
 
         if (depth.enable) {
-            depthChannel = depth.texture ? new DepthChannel(depth.texture) : new DepthChannel(size);
+            auto depthChannel = depth.texture ? new DepthChannel(fb, depth.texture) : new DepthChannel(fb, size);
             depthChannel.clear = depth.clear;
             assert(depthChannel.texture.width == size[0]);
             assert(depthChannel.texture.height == size[1]);
+
+            result.depthChannel = depthChannel;
         }
 
         if (stencil.enable) {
-            stencilChannel = stencil.texture ? new StencilChannel(stencil.texture) : new StencilChannel(size);
+            auto stencilChannel = stencil.texture ? new StencilChannel(fb, stencil.texture) : new StencilChannel(fb, size);
             stencilChannel.clear = stencil.clear;
             assert(stencilChannel.texture.width == size[0]);
             assert(stencilChannel.texture.height == size[1]);
+
+            result.stencilChannel = stencilChannel;
         }
 
-        return new Canvas(size, colorChannel, depthChannel, stencilChannel, new Framebuffer);
+        return result;
     }
 
     Canvas build(Window window) 
@@ -53,19 +59,24 @@ struct CanvasBuilder {
         import sbylib.graphics.canvas.canvaschannel : ColorChannel, DepthChannel, StencilChannel;
         import sbylib.wrapper.gl : DefaultFramebuffer;
 
-        auto colorChannel = new ColorChannel(window.size);
+        auto colorChannel = new ColorChannel(DefaultFramebuffer, window.size);
         colorChannel.clear = color.clear;
 
-        auto depthChannel = new DepthChannel(window.size);
+        auto depthChannel = new DepthChannel(DefaultFramebuffer, window.size);
         depthChannel.clear = depth.clear;
 
-        auto stencilChannel = new StencilChannel(window.size);
+        auto stencilChannel = new StencilChannel(DefaultFramebuffer, window.size);
         stencilChannel.clear = stencil.clear;
 
         if (size == typeof(size).init)
             size = window.size;
 
-        return new Canvas(size, colorChannel, depthChannel, stencilChannel, DefaultFramebuffer);
+        auto result = new Canvas(size, DefaultFramebuffer);
+        result.colorChannel = colorChannel;
+        result.depthChannel = depthChannel;
+        result.stencilChannel = stencilChannel;
+
+        return result;
     }
 }
 

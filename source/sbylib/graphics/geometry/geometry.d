@@ -28,7 +28,7 @@ struct GeometryBuilder(Attribute, Index = uint) {
         indexList ~= index;
     }
 
-    Geometry!Attribute build() {
+    Geometry!Attribute build() const {
         return new Geometry!Attribute(primitive, attributeList, indexList);
     }
 }
@@ -42,10 +42,10 @@ class Geometry(Attribute, Index = uint) : IGeometry {
     private Buffer!Index indexBuffer;
     private VertexArray vao;
 
-    this(Primitive primitive, Attribute[] attributeList, Index[] indexList) {
+    this(const Primitive primitive, const Attribute[] attributeList, const Index[] indexList) {
         this.primitive = primitive;
-        this._attributeList = attributeList;
-        this._indexList = indexList;
+        this._attributeList = attributeList.dup;
+        this._indexList = indexList.dup;
 
         this.vao = new VertexArray;
 
@@ -83,9 +83,6 @@ class Geometry(Attribute, Index = uint) : IGeometry {
                 offset += size;
             }
         }}
-
-        if (this.indexBuffer)
-            this.indexBuffer.bind(BufferTarget.ElementArray);
     }
 
     override void render() {
@@ -94,16 +91,19 @@ class Geometry(Attribute, Index = uint) : IGeometry {
         this.vao.bind();
 
         if (this.indexBuffer)
+            this.indexBuffer.bind(BufferTarget.ElementArray);
+
+        if (this.indexBuffer)
             GlFunction.drawElements!(Index)(primitive, cast(uint)indexList.length);
         else
             GlFunction.drawArrays(primitive, 0, cast(uint)attributeList.length);
     }
 
-    Attribute[] attributeList() {
+    auto ref attributeList() inout {
         return _attributeList;
     }
 
-    Index[] indexList() {
+    auto ref indexList() inout {
         return _indexList;
     }
 
@@ -160,7 +160,11 @@ class Geometry(Attribute, Index = uint) : IGeometry {
     }
 
     void update() {
-        this.vertexBuffer.sendSubData(_attributeList, BufferTarget.Array);
+        vertexBuffer.sendData(attributeList, BufferTarget.Array);
+        if (indexList) {
+            if (!indexBuffer) indexBuffer = new Buffer!Index;
+            indexBuffer.sendData(indexList, BufferTarget.ElementArray);
+        }
     }
 
     private template ElementType(T) {

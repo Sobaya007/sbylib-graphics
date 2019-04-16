@@ -91,24 +91,24 @@ void main() {
         mixin VertexShaderSource!(q{
             #version 450
             in vec4 position;
-            in vec2 uv;
-            out vec2 uv2;
+            in vec2 texcoord;
+            out vec2 tc;
             uniform mat4 worldMatrix;
 
             void main() {
                 gl_Position = worldMatrix * position;
-                uv2 = uv;
+                tc = texcoord;
             }
         });
 
         mixin FragmentShaderSource!(q{
             #version 450
-            in vec2 uv2;
+            in vec2 tc;
             out vec4 fragColor;
             uniform sampler2D tex;
 
             void main() {
-                fragColor = texture(tex, uv2);
+                fragColor = texelFetch(tex, ivec2(tc), 0).rrrr;
             }
         });
     }
@@ -120,22 +120,40 @@ void main() {
         mixin Material!(TextMaterial);
         mixin ImplUniform;
         mixin ImplBuilder;
+
+        private GlyphGeometry geom;
+
+        this() {
+            this.geom = new GlyphGeometry("./font/consola.ttf");
+            this.geometry = geom;
+            this.tex = geom.glyphStore.texture;
+        }
+
+        void setText(string text) {
+            import std.algorithm : map, sum, maxElement;
+
+            geom.clear();
+            auto store = geom.glyphStore;
+
+            float x = 0;
+            foreach (c; text) {
+                const g = store.getGlyph(c);
+                const w = cast(float)g.width / g.maxHeight;
+                this.geom.addCharacter(c, vec2(x,0), vec2(w, 1));
+                x += cast(float)g.advance / g.maxHeight;
+            }
+            this.pixelHeight = 50.pixel;
+            this.scale.x = this.scale.y;
+
+            this.tex = geom.glyphStore.texture;
+        }
+
     }
 
-    TextBox textBox;
-    with (TextBox.Builder()) {
-        geometry = GeometryLibrary().buildPlane();
-        with (StringTextureBuilder()) {
-            font = "./font/consola.ttf";
-            text = "0";
-            tex = build();
-        }
-        textBox = build();
-        textBox.pixelPos = [0.pixel, (window.height/2 - 50).pixel];
-        textBox.pixelSize = [tex.width.pixel, tex.height.pixel];
-        textBox.scale *= 0.5;
-        textBox.blend = true;
-    }
+    auto textBox = new TextBox;
+    textBox.setText("0");
+    textBox.pixelPos = [0.pixel, (window.height/2 - 50).pixel];
+    textBox.blend = true;
 
     Scene[] sceneList;
     sceneList ~= createScene0;
@@ -149,19 +167,16 @@ void main() {
     auto idx = 0;
     bool running = false;
     void transit(int dif) {
+        import std.algorithm : map, sum, maxElement;
+
         if (idx + dif < 0) return;
         if (idx + dif >= sceneList.length) return;
         if (running) return;
 
         idx += dif;
 
-        with (StringTextureBuilder()) {
-            font = "./font/consola.ttf";
-            text = idx.to!dstring;
-            textBox.tex = build();
-        }
-        textBox.pixelSize = [textBox.tex.width.pixel, textBox.tex.height.pixel];
-        textBox.scale *= 0.5;
+        textBox.setText(idx.to!string);
+        textBox.pixelPos = [0.pixel, (window.height/2 - 50).pixel];
 
         Color[2] colors = dif == -1 ? [Color.White, Color.Gray] : [Color.Gray, Color.White];
         foreach (i; 0..2) {

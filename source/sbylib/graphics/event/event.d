@@ -22,9 +22,8 @@ class Event(Args...) : IEvent {
             context.eventList ~= this;
     }
 
-    void fire(Args args) 
-        in (this.isAlive)
-    {
+    void fire(Args args) {
+        if (this.isAlive is false) return;
         if (killCondition && killCondition()) {
             this.alive = false;
             foreach (cb; finishCallbackList) cb();

@@ -53,6 +53,7 @@ abstract class Material {
     protected mixin template AddUniform(string source) {
         import sbylib.math : vec2, vec3, vec4, mat2, mat3, mat4;
         import sbylib.graphics.glsl : buildAST, extractUniform, variable;
+        import sbylib.graphics.material : uniform;
         import sbylib.wrapper.gl : Texture;
         import std.format : format;
 

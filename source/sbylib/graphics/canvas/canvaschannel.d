@@ -2,24 +2,23 @@ module sbylib.graphics.canvas.canvaschannel;
 
 public import sbylib.math : vec4;
 public import sbylib.graphics.util.color : Color;
-public import sbylib.wrapper.gl : Texture, TextureTarget, TextureInternalFormat, FramebufferAttachType;
+public import sbylib.wrapper.gl : Texture, TextureTarget, TextureInternalFormat, FramebufferAttachType, TextureFormat;
+import sbylib.wrapper.gl : Framebuffer;
 import std.algorithm : among;
 
-class ColorChannel {
-
-    enum AttachType = FramebufferAttachType.Color0;
-
+private mixin template ImplChannel(TextureInternalFormat InternalFormat, TextureFormat Format, FramebufferAttachType AttachType) {
     Texture texture;
-    Color clear = Color.Black;
 
-    this(Texture texture) 
+    private Framebuffer fb;
+
+    this(Framebuffer fb, Texture texture) 
         in (texture.target == TextureTarget.Tex2D)
-        in (!texture.internalFormat.among(TextureInternalFormat.Depth, TextureInternalFormat.Stencil))
     {
-        this.texture = texture;
+        this.fb = fb;
+        this.attach(texture);
     }
 
-    this(int[2] size) {
+    this(Framebuffer fb, int[2] size) {
         import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
 
         with (TextureBuilder()) {
@@ -27,100 +26,59 @@ class ColorChannel {
             height = size[1];
             target = TextureTarget.Tex2D;
             mipmapLevel = 0;
-            iformat = TextureInternalFormat.RGBA32F;
-            format = TextureFormat.RGBA;
+            iformat = InternalFormat;
+            format = Format;
 
-            this.texture = build();
+            this(fb, build());
         }
     }
+
+    void destroy() {
+        this.texture.destroy();
+    }
+
+    void attach(Texture texture) {
+        this.texture = texture;
+        this.fb.attach(texture, 0, AttachType);
+    }
+}
+
+class ColorChannel {
+
+    mixin ImplChannel!(TextureInternalFormat.RGBA32F, TextureFormat.RGBA, FramebufferAttachType.Color0);
+
+    Color clear = Color.Black;
 
     void clearSetting() {
         import sbylib.wrapper.gl : GlFunction;
 
         GlFunction.clearColor(clear.r, clear.g, clear.b, clear.a);
     }
-
-    void destroy() {
-        this.texture.destroy();
-    }
 }
 
 class DepthChannel {
 
-    enum AttachType = FramebufferAttachType.Depth;
-    
-    Texture texture;
+    mixin ImplChannel!(TextureInternalFormat.Depth, TextureFormat.Depth, FramebufferAttachType.Depth);
+
     float clear = 1;
 
-    this(Texture texture) 
-        in (texture.target == TextureTarget.Tex2D)
-        in (texture.internalFormat == TextureInternalFormat.Depth)
-    {
-        this.texture = texture;
-    }
-
-    this(int[2] size) {
-        import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
-
-        with (TextureBuilder()) {
-            width = size[0];
-            height = size[1];
-            target = TextureTarget.Tex2D;
-            mipmapLevel = 0;
-            iformat = TextureInternalFormat.Depth;
-            format = TextureFormat.Depth;
-
-            this.texture = build();
-        }
-    }
 
     void clearSetting() {
         import sbylib.wrapper.gl : GlFunction;
 
         GlFunction.clearDepth(clear);
     }
-
-    void destroy() {
-        this.texture.destroy();
-    }
 }
 
 class StencilChannel {
+
+    mixin ImplChannel!(TextureInternalFormat.Stencil, TextureFormat.Stencil, FramebufferAttachType.Stencil);
     
-    enum AttachType = FramebufferAttachType.Stencil;
-
-    Texture texture;
     int clear = 0;
-
-    this(Texture texture) 
-        in (texture.target == TextureTarget.Tex2D)
-        in (texture.internalFormat == TextureInternalFormat.Stencil)
-    {
-        this.texture = texture;
-    }
-
-    this(int[2] size) {
-        import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
-
-        with (TextureBuilder()) {
-            width = size[0];
-            height = size[1];
-            target = TextureTarget.Tex2D;
-            mipmapLevel = 0;
-            iformat = TextureInternalFormat.Stencil;
-            format = TextureFormat.Stencil;
-
-            this.texture = build();
-        }
-    }
 
     void clearSetting() {
         import sbylib.wrapper.gl : GlFunction;
 
         GlFunction.clearStencil(clear);
-    }
-
-    void destroy() {
-        this.texture.destroy();
     }
 }
