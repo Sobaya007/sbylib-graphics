@@ -9,6 +9,10 @@ abstract class Material {
 
     abstract string vertexShaderSource();
     abstract string fragmentShaderSource();
+    string geometryShaderSource() { return ""; }
+    string tessellationControlShaderSource() { return ""; }
+    string tessellationEvaluationShaderSource() { return ""; }
+    int patchVertices() { return -1; }
 
     protected Program program;
 
@@ -19,16 +23,37 @@ abstract class Material {
 
         auto vertexShader = new Shader(ShaderType.Vertex);
         vertexShader.source = vertexShaderSource;
+        this.program.attach(vertexShader);
 
         auto fragmentShader = new Shader(ShaderType.Fragment);
         fragmentShader.source = fragmentShaderSource;
-
-        this.program.attach(vertexShader);
         this.program.attach(fragmentShader);
+
+        if (geometryShaderSource.length > 0) {
+            auto geometryShader = new Shader(ShaderType.Geometry);
+            geometryShader.source = geometryShaderSource;
+            this.program.attach(geometryShader);
+        }
+
+        if (tessellationControlShaderSource.length > 0) {
+            auto tessellationControlShader = new Shader(ShaderType.TessControl);
+            tessellationControlShader.source = tessellationControlShaderSource;
+            this.program.attach(tessellationControlShader);
+        }
+
+        if (tessellationEvaluationShaderSource.length > 0) {
+            auto tessellationEvaluationShader = new Shader(ShaderType.TessEvaluation);
+            tessellationEvaluationShader.source = tessellationEvaluationShaderSource;
+            this.program.attach(tessellationEvaluationShader);
+        }
+
         this.program.link();
     }
 
     void use() {
+        import sbylib.wrapper.gl : GlFunction, PatchParamName;
+
+        GlFunction.setPatchParameter(PatchParamName.Vertices, patchVertices);
         this.program.use();
     }
 
@@ -48,6 +73,25 @@ abstract class Material {
     protected mixin template FragmentShaderSource(string source) {
         override string fragmentShaderSource() { return source; }
         mixin AddUniform!(source);
+    }
+
+    protected mixin template GeometryShaderSource(string source) {
+        override string geometryShaderSource() { return source; }
+        mixin AddUniform!(source);
+    }
+
+    protected mixin template TessellationControlShaderSource(string source) {
+        override string tessellationControlShaderSource() { return source; }
+        mixin AddUniform!(source);
+    }
+
+    protected mixin template TessellationEvaluationShaderSource(string source) {
+        override string tessellationEvaluationShaderSource() { return source; }
+        mixin AddUniform!(source);
+    }
+
+    protected mixin template PatchVertices(int vertices) {
+        override int patchVertices() { return vertices; }
     }
 
     protected mixin template AddUniform(string source) {

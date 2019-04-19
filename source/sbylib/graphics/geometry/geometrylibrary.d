@@ -10,9 +10,9 @@ struct GeometryLibrary {
         return buildGeometry();
     }
 
-    auto buildPlane() {
+    auto buildPlane(bool strip = true) {
         import sbylib.graphics.geometry.geometry2d.plane : buildGeometry;
-        return buildGeometry();
+        return buildGeometry(strip);
     }
 
     auto buildBox() {

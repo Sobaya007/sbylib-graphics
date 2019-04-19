@@ -32,10 +32,10 @@ class GlyphGeometry : Geometry!Attribute {
 
         auto indexOffset = cast(int)this.attributeList.length;
         this.attributeList ~= [
-            Attribute(vec4(pos,0,1), vec2(g.x, g.y+g.maxHeight)),
-            Attribute(vec4(pos+vec2(0,size.y),0,1), vec2(g.x,g.y)),
-            Attribute(vec4(pos+vec2(size.x,0),0,1), vec2(g.x+g.advance,g.y+g.maxHeight)),
-            Attribute(vec4(pos+vec2(size.x,size.y),0,1), vec2(g.x+g.advance,g.y)),
+            Attribute(vec4(pos+vec2(0,-size.y),     0,1), vec2(g.x, g.y+g.maxHeight)),
+            Attribute(vec4(pos+vec2(0,0),           0,1), vec2(g.x,g.y)),
+            Attribute(vec4(pos+vec2(size.x,-size.y),0,1), vec2(g.x+g.advance,g.y+g.maxHeight)),
+            Attribute(vec4(pos+vec2(size.x,0),      0,1), vec2(g.x+g.advance,g.y)),
         ];
         this.indexList ~= [
             indexOffset + 0,

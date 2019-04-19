@@ -35,7 +35,7 @@ struct GeometryBuilder(Attribute, Index = uint) {
 
 class Geometry(Attribute, Index = uint) : IGeometry {
 
-    private Primitive primitive;
+    Primitive primitive;
     private Attribute[] _attributeList;
     private Index[] _indexList;
     private Buffer!Attribute vertexBuffer;

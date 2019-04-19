@@ -37,7 +37,9 @@ private mixin template ImplChannel(TextureInternalFormat InternalFormat, Texture
         this.texture.destroy();
     }
 
-    void attach(Texture texture) {
+    void attach(Texture texture) 
+        in (texture !is null)
+    {
         this.texture = texture;
         this.fb.attach(texture, 0, AttachType);
     }
