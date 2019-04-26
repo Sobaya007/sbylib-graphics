@@ -238,3 +238,7 @@ void render(Canvas dstCanvas, Texture tex, ivec2 p, ivec2 s) {
         p.x, p.y, p.x + s.x, p.y + s.y,
         TextureFilter.Linear, BufferBit.Color);
 }
+
+void lookAt(T)(T entity, vec3 target, vec3 up = vec3(0,1,0)) {
+    entity.rot = mat3.lookAt(normalize(entity.pos - target), up);
+}

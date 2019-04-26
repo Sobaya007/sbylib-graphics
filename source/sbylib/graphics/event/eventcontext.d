@@ -8,7 +8,7 @@ private struct BindNotification { EventContext context; bool bind; }
 
 class EventContext {
 
-    package static EventContext currentContext;
+    package static EventContext[] currentContext;
 
     private Array!BindCallback bindCallbackList;
     private Array!BindCallback unbindCallbackList;
@@ -47,10 +47,8 @@ class EventContext {
         return _bound;
     }
 
-    ContextRegister opCall() 
-        in(currentContext is null)
-    {
-        currentContext = this;
+    ContextRegister opCall() {
+        currentContext ~= this;
         return ContextRegister();
     }
 
@@ -96,6 +94,8 @@ VoidEvent when(BindNotification condition) {
 private struct ContextRegister {
 
     ~this() {
-        EventContext.currentContext = null;
+        import std.array : popFront;
+
+        EventContext.currentContext.popFront;
     }
 }

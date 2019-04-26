@@ -9,27 +9,32 @@ interface IEvent {
 }
 
 class Event(Args...) : IEvent {
+    import std.container : Array;
+
     private void delegate(Args) callback;
     private void delegate(Exception) onerror;
     private bool delegate() killCondition;
     private void delegate()[] finishCallbackList;
-    package EventContext context;
+    package EventContext[] context;
     private bool alive = true;
 
     this() {
-        context = EventContext.currentContext;
-        if (context)
-            context.eventList ~= this;
+        context = EventContext.currentContext.dup;
+        foreach (c; context) {
+            c.eventList ~= this;
+        }
     }
 
     void fire(Args args) {
+        import std.algorithm : any;
+
         if (this.isAlive is false) return;
         if (killCondition && killCondition()) {
             this.alive = false;
             foreach (cb; finishCallbackList) cb();
             return;
         }
-        if (context && !context.isBound()) return;
+        if (context.any!(c => c.isBound is false)) return;
         if (callback) callback(args);
     }
 
