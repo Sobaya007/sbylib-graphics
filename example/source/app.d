@@ -7,6 +7,7 @@ import sbylib.wrapper.glfw;
 import scene0 : createScene0;
 import scene1 : createScene1;
 import scene2 : createScene2;
+import scene3 : createScene3;
 
 void main() {
 
@@ -156,9 +157,10 @@ void main() {
     textBox.blend = true;
 
     Scene[] sceneList;
-    sceneList ~= createScene0;
-    sceneList ~= createScene1;
-    sceneList ~= createScene2;
+    //sceneList ~= createScene0;
+    //sceneList ~= createScene1;
+    //sceneList ~= createScene2;
+    sceneList ~= createScene3;
 
     foreach (i; 0..sceneList.length) {
         sceneList[i].pos.x = i * 2;

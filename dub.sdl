@@ -7,6 +7,7 @@ license "proprietary"
 targetType "library"
 targetPath "lib"
 
+dependency "sbylib-assimp" version="*"
 dependency "sbylib-gl" version="*"
 dependency "sbylib-glfw" version="*"
 dependency "sbylib-ft" version="*"

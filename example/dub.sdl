@@ -8,3 +8,4 @@ targetType "executable"
 targetPath "bin"
 
 dependency "sbylib-graphics" version="*"
+lflags "-fuse-ld=gold"

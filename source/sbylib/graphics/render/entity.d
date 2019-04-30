@@ -30,7 +30,6 @@ class Entity : Renderable {
     }
 
     override void renderImpl() {
-        import std.traits : getSymbolsByUDA;
         import sbylib.wrapper.gl : GlFunction, GlUtils, TestFunc;
 
         this._material.use();

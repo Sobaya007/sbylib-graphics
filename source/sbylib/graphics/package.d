@@ -9,5 +9,6 @@ import sbylib.graphics.geometry;
 import sbylib.graphics.glsl;
 import sbylib.graphics.glyph;
 import sbylib.graphics.material;
+import sbylib.graphics.model;
 import sbylib.graphics.render;
 import sbylib.graphics.util;
