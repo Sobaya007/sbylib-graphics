@@ -157,9 +157,9 @@ void main() {
     textBox.blend = true;
 
     Scene[] sceneList;
-    //sceneList ~= createScene0;
-    //sceneList ~= createScene1;
-    //sceneList ~= createScene2;
+    sceneList ~= createScene0;
+    sceneList ~= createScene1;
+    sceneList ~= createScene2;
     sceneList ~= createScene3;
 
     foreach (i; 0..sceneList.length) {

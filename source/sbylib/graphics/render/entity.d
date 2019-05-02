@@ -40,6 +40,9 @@ class Entity : Renderable {
         GlUtils.blend(this.blend);
         GlFunction.blendFunc(this.srcFactor, this.dstFactor);
 
+        if (this.geometry is null)
+            throw new Exception("Geometry is not registered.");
+
         this.geometry.render();
     }
 

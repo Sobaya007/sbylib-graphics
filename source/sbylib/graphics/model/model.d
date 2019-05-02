@@ -14,6 +14,7 @@ import sbylib.graphics.geometry : IGeometry, GeometryBuilder, transformable;
 import sbylib.graphics.material : Mat = Material, uniform;
 import sbylib.math : mat4, vec4;
 import std.format : format;
+import std.typecons : BitFlags;
 import std.variant : Variant;
 
 class Model : Renderable {
@@ -21,6 +22,7 @@ class Model : Renderable {
     protected abstract Mat _material(string);
     protected abstract void setUniform(string);
 
+    AssimpScene scene;
     ModelNode rootNode;
     bool blend;
     bool depthTest = true;
@@ -68,6 +70,7 @@ class Model : Renderable {
             Assimp.initialize();
             auto res = new typeof(this);
             auto scene = AssimpScene.fromFile(path);
+            res.scene = scene;
             res.rootNode = new ModelNode(scene.rootNode, scene);
             return res;
         }
@@ -237,7 +240,7 @@ class Model : Renderable {
 
         with (GeometryBuilder!(Attribute)()) {
             with (mesh) {
-                primitive = conv(primitiveType);
+                primitive = conv(primitiveTypes);
                 foreach (t; zip(vertices, normals)) {
                     add(Attribute(t.expand));
                 }
@@ -251,17 +254,12 @@ class Model : Renderable {
         }
     }
 
-    private static Primitive conv(AssimpPrimitiveType t) {
-        final switch (t) {
-            case AssimpPrimitiveType.Point:
-                return Primitive.Point;
-            case AssimpPrimitiveType.Line:
-                return Primitive.Line;
-            case AssimpPrimitiveType.Triangle:
-                return Primitive.Triangle;
-            case AssimpPrimitiveType.Polygon:
-                assert(false);
-        }
+    private static Primitive conv(BitFlags!AssimpPrimitiveType t) {
+        if (t & AssimpPrimitiveType.Point)    return Primitive.Point;
+        if (t & AssimpPrimitiveType.Line)     return Primitive.Line;
+        if (t & AssimpPrimitiveType.Triangle) return Primitive.Triangle;
+        if (t & AssimpPrimitiveType.Polygon) return Primitive.Triangle;
+        assert(false);
     }
 
     private static Variant[string] createMaterial(AssimpMaterial mat) {

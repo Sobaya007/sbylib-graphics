@@ -145,6 +145,11 @@ auto pressing(KeyButton key) {
     return FrameNotification(() => Window.getCurrentWindow().getKey(key) == ButtonState.Press);
 }
 
+auto releasing(KeyButton key) {
+    import sbylib.graphics.event.frameevent : FrameNotification;
+    return FrameNotification(() => Window.getCurrentWindow().getKey(key) == ButtonState.Release);
+}
+
 static foreach (NotificationType; AliasSeq!(KeyNotification, OrKeyNotification, AndKeyNotification)) {
     VoidEvent when(NotificationType condition) {
         import sbylib.graphics.event : when, finish, then;
