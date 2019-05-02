@@ -2,7 +2,8 @@ module sbylib.graphics.glsl.parse.blocktype;
 
 enum BlockType {
     Struct,
-    Uniform
+    Uniform,
+    Buffer,
 }
 
 package string getCode(BlockType b) {
@@ -11,5 +12,7 @@ package string getCode(BlockType b) {
         return "struct";
     case BlockType.Uniform:
         return "uniform";
+    case BlockType.Buffer:
+        return "buffer";
     }
 }

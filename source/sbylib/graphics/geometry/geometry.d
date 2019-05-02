@@ -77,7 +77,7 @@ class Geometry(Attribute, Index = uint) : IGeometry {
                 if (loc != -1) {
                     this.vao.enable(loc);
                     this.vertexBuffer.bind(BufferTarget.Array);
-                    GlFunction.vertexAttribPointer!E(loc, dimension, false, stride, offset);
+                    GlFunction().vertexAttribPointer!E(loc, dimension, false, stride, offset);
                 }
 
                 offset += size;
@@ -94,9 +94,9 @@ class Geometry(Attribute, Index = uint) : IGeometry {
             this.indexBuffer.bind(BufferTarget.ElementArray);
 
         if (this.indexBuffer)
-            GlFunction.drawElements!(Index)(primitive, cast(uint)indexList.length);
+            GlFunction().drawElements!(Index)(primitive, cast(uint)indexList.length);
         else
-            GlFunction.drawArrays(primitive, 0, cast(uint)attributeList.length);
+            GlFunction().drawArrays(primitive, 0, cast(uint)attributeList.length);
     }
 
     auto ref attributeList() inout {

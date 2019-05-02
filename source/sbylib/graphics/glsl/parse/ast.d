@@ -8,7 +8,7 @@ class AST {
     Statement[] statements;
 
     this(Token[] tokens) {
-        import std.algorithm : find;
+        import std.algorithm : find, countUntil, canFind;
         import std.array : empty;
         import std.format : format;
         import sbylib.graphics.glsl.parse.functions : isConvertible;
@@ -24,7 +24,8 @@ class AST {
         while (!tokens.empty) {
             if (tokens[0].isConvertible!(Attribute, getCode)) {
                 //Variable or Block(uniform)
-                if (tokens[2].str == "{") {
+                const lastIndex = tokens.countUntil!(t => t.str == ";");
+                if (lastIndex >= 0 && tokens[0..lastIndex].canFind!(t => t.str == "{")) {
                     //Block(uniform)
                     statements ~= new Block(tokens);
                 } else {
@@ -38,10 +39,15 @@ class AST {
             } else if (tokens[0].str == "layout") {
                 const tok = tokens.find!(t => t.str == ")");
                 if (tok[2].str == ";") {
-                    // if this token is variable declare's part, thre is more than 1 tokens between ')' and ';'
+                    // if this token is variable declare's part, there is more than 1 tokens between ')' and ';'
                     statements ~= new Layout(tokens);
                 } else {
-                    statements ~= new Variable(tokens);
+                    const lastIndex = tokens.countUntil!(t => t.str == ";");
+                    if (lastIndex >= 0 && tokens[0..lastIndex].canFind!(t => t.str == "{")) {
+                        statements ~= new Block(tokens);
+                    } else {
+                        statements ~= new Variable(tokens);
+                    }
                 }
             } else if (tokens[0].str == "#") {
                 statements ~= new Sharp(tokens);
@@ -65,4 +71,20 @@ class AST {
 
 AST buildAST(string source) {
     return new AST(tokenize(source));
+}
+
+unittest {
+
+    buildAST(q{
+        #version 450
+        layout(std430,binding=0) readonly buffer SSBO {
+            vec4 data[];
+        } gSSBO;
+
+        void main() {
+            vec4 data0 = gSSBO.data[0];
+            vec4 data1 = gSSBO.data[2];
+        }
+    });
+
 }

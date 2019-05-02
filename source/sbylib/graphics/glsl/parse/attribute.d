@@ -10,7 +10,7 @@ enum Attribute {
     WriteOnly
 }
 
-package string getCode(Attribute attr) {
+string getCode(Attribute attr) {
     final switch(attr) {
     case Attribute.In:
         return "in";

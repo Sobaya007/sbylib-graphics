@@ -30,7 +30,7 @@ class Canvas {
         if (colorChannel) colorChannel.clearSetting();
         if (depthChannel) depthChannel.clearSetting();
         if (stencilChannel) stencilChannel.clearSetting();
-        GlUtils.clear(mode);
+        GlUtils().clear(mode);
     }
 
     void render(Canvas canvas,
@@ -46,7 +46,7 @@ class Canvas {
     package void bind() {
         import sbylib.wrapper.gl : FramebufferBindType, GlFunction;
         fb.bind(FramebufferBindType.Write);
-        GlFunction.setViewport(0,0,size[0],size[1]);
+        GlFunction().setViewport(0,0,size[0],size[1]);
     }
 
     ColorChannel color() { return colorChannel; }

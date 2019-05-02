@@ -57,7 +57,7 @@ mixin template ImplPos() {
     Pixel[2] pixelPos() {
         import sbylib.wrapper.gl : GlUtils;
 
-        const viewport = GlUtils.getViewport();
+        const viewport = GlUtils().getViewport();
         return [
             pixel(cast(int)(pos.x * viewport[2]) / 2),
             pixel(cast(int)(pos.y * viewport[3]) / 2),
@@ -67,7 +67,7 @@ mixin template ImplPos() {
     Pixel[2] pixelPos(Pixel[2] pixel) {
         import sbylib.wrapper.gl : GlUtils;
 
-        const viewport = GlUtils.getViewport();
+        const viewport = GlUtils().getViewport();
 
         this.pos.xy = 2 * vec2(pixel) / vec2(viewport[2..$]);
 
@@ -120,7 +120,7 @@ mixin template ImplScale() {
     Pixel[2] pixelSize(Pixel[2] pixel) {
         import sbylib.wrapper.gl : GlUtils;
 
-        this.scale.xy = 2 * vec2(pixel) / vec2(GlUtils.getViewport()[2..$]);
+        this.scale.xy = 2 * vec2(pixel) / vec2(GlUtils().getViewport()[2..$]);
 
         return pixel;
     }
@@ -128,7 +128,7 @@ mixin template ImplScale() {
     Pixel[2] pixelSize() {
         import sbylib.wrapper.gl : GlUtils;
 
-        const viewport = GlUtils.getViewport();
+        const viewport = GlUtils().getViewport();
         return [
             pixel(cast(int)(this.scale.x * viewport[2]) / 2),
             pixel(cast(int)(this.scale.y * viewport[3]) / 2),

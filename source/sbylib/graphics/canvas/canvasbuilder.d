@@ -59,13 +59,13 @@ struct CanvasBuilder {
         import sbylib.graphics.canvas.canvaschannel : ColorChannel, DepthChannel, StencilChannel;
         import sbylib.wrapper.gl : DefaultFramebuffer;
 
-        auto colorChannel = new ColorChannel(DefaultFramebuffer, window.size);
+        auto colorChannel = new ColorChannel(window.size);
         colorChannel.clear = color.clear;
 
-        auto depthChannel = new DepthChannel(DefaultFramebuffer, window.size);
+        auto depthChannel = new DepthChannel(window.size);
         depthChannel.clear = depth.clear;
 
-        auto stencilChannel = new StencilChannel(DefaultFramebuffer, window.size);
+        auto stencilChannel = new StencilChannel(window.size);
         stencilChannel.clear = stencil.clear;
 
         if (size == typeof(size).init)

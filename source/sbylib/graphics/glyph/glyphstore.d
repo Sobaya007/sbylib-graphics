@@ -44,6 +44,7 @@ class GlyphStore {
     }
 
     Glyph getGlyph(dchar c) {
+        import std.format : f = format;
         import sbylib.wrapper.gl : TextureBuilder, TextureInternalFormat, TextureFormat;
 
         if (auto r = c in glyph) return *r;
@@ -98,12 +99,15 @@ class GlyphStore {
         const dstX2 = cast(int)(dstX1 + g.width);
         const dstY2 = cast(int)(dstY1 + g.height);
 
-        srcCanvas.color.attach(g.texture);
-        dstCanvas.render(
-                srcCanvas,
-                0, 0, g.texture.width, g.texture.height,
-                dstX1, dstY1, dstX2, dstY2,
-                TextureFilter.Linear, BufferBit.Color);
+        // Avoid writing ' ' (this cause GL error because its valid size is zero)
+        if ([g.width, g.height] != [0,0]) {
+            srcCanvas.color.attach(g.texture);
+            dstCanvas.render(
+                    srcCanvas,
+                    0, 0, g.texture.width, g.texture.height,
+                    dstX1, dstY1, dstX2, dstY2,
+                    TextureFilter.Linear, BufferBit.Color);
+        }
 
         g.x = x;
         g.y = y;

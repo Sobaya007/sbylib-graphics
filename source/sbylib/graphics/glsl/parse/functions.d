@@ -42,14 +42,14 @@ void expect(ref Token[] tokens, string[] expected) {
     import std.format : format;
 
     auto candidates = expected.map!(a => format!"'%s'"(a)).array.join(" or ");
-    assert(!tokens.empty,
-        format!"%s was expected, but no tokens found here."(candidates));
+    if (tokens.empty)
+        throw new Exception(format!"%s was expected, but no tokens found here."(candidates));
 
     const token = tokens[0];
     tokens = tokens[1..$];
-    assert(expected.canFind(token.str),
-        format!"Error[%d, %d]:%s was expected, not '%s'"
-        (token.line, token.column, candidates, token.str));
+    if (expected.canFind(token.str) is false)
+        throw new Exception(format!"Error[%d, %d]:%s was expected, not '%s'"
+                (token.line, token.column, candidates, token.str));
 }
 
 void expect(ref Token[] tokens, string expected) {

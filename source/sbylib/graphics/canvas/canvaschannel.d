@@ -3,10 +3,11 @@ module sbylib.graphics.canvas.canvaschannel;
 public import sbylib.math : vec4;
 public import sbylib.graphics.util.color : Color;
 public import sbylib.wrapper.gl : Texture, TextureTarget, TextureInternalFormat, FramebufferAttachType, TextureFormat;
-import sbylib.wrapper.gl : Framebuffer;
+import sbylib.wrapper.gl : Framebuffer, GlUtils;
 import std.algorithm : among;
 
-private mixin template ImplChannel(TextureInternalFormat InternalFormat, TextureFormat Format, FramebufferAttachType AttachType) {
+private mixin template ImplChannel(TextureInternalFormat InternalFormat,
+        TextureFormat Format, FramebufferAttachType AttachType) {
     Texture texture;
 
     private Framebuffer fb;
@@ -19,7 +20,16 @@ private mixin template ImplChannel(TextureInternalFormat InternalFormat, Texture
     }
 
     this(Framebuffer fb, int[2] size) {
-        import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat, TextureFormat;
+        this(size);
+        this.fb = fb;
+
+        if (size != [0,0])
+            this.attach(this.texture);
+    }
+
+    this(int[2] size) {
+        import sbylib.wrapper.gl : Texture, TextureBuilder, TextureTarget, TextureInternalFormat,
+               TextureFormat, DefaultFramebuffer;
 
         with (TextureBuilder()) {
             width = size[0];
@@ -29,7 +39,8 @@ private mixin template ImplChannel(TextureInternalFormat InternalFormat, Texture
             iformat = InternalFormat;
             format = Format;
 
-            this(fb, build());
+            this.texture = build();
+            this.fb = DefaultFramebuffer;
         }
     }
 
@@ -39,6 +50,10 @@ private mixin template ImplChannel(TextureInternalFormat InternalFormat, Texture
 
     void attach(Texture texture) 
         in (texture !is null)
+        in (0 < texture.width)
+        in (0 < texture.height)
+        in (texture.width < GlUtils().getMaxFramebufferWidth())
+        in (texture.height < GlUtils().getMaxFramebufferHeight())
     {
         this.texture = texture;
         this.fb.attach(texture, 0, AttachType);
@@ -54,7 +69,7 @@ class ColorChannel {
     void clearSetting() {
         import sbylib.wrapper.gl : GlFunction;
 
-        GlFunction.clearColor(clear.r, clear.g, clear.b, clear.a);
+        GlFunction().clearColor(clear.r, clear.g, clear.b, clear.a);
     }
 }
 
@@ -68,7 +83,7 @@ class DepthChannel {
     void clearSetting() {
         import sbylib.wrapper.gl : GlFunction;
 
-        GlFunction.clearDepth(clear);
+        GlFunction().clearDepth(clear);
     }
 }
 
@@ -81,6 +96,6 @@ class StencilChannel {
     void clearSetting() {
         import sbylib.wrapper.gl : GlFunction;
 
-        GlFunction.clearStencil(clear);
+        GlFunction().clearStencil(clear);
     }
 }

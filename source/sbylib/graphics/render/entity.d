@@ -35,10 +35,10 @@ class Entity : Renderable {
         this._material.use();
         this.setUniform();
 
-        GlUtils.depthWrite(this.depthWrite);
-        GlUtils.depthTest(this.depthTest);
-        GlUtils.blend(this.blend);
-        GlFunction.blendFunc(this.srcFactor, this.dstFactor);
+        GlUtils().depthWrite(this.depthWrite);
+        GlUtils().depthTest(this.depthTest);
+        GlUtils().blend(this.blend);
+        GlFunction().blendFunc(this.srcFactor, this.dstFactor);
 
         if (this.geometry is null)
             throw new Exception("Geometry is not registered.");
@@ -140,16 +140,16 @@ class Entity : Renderable {
             alias Type = typeof(member);
             auto loc = this.material.getUniformLocation(memberName[5..$-2]); // assumed as 'this.memberName()'
             static if (isBasicType!(Type)) {
-                GlUtils.uniform(loc, member);
+                GlUtils().uniform(loc, member);
             } else static if (isInstanceOf!(Vector, Type)) {
-                GlUtils.uniform(loc, member.array);
+                GlUtils().uniform(loc, member.array);
             } else static if (isInstanceOf!(Matrix, Type) && Type.Row == Type.Column) {
-                GlUtils.uniformMatrix!(Type.ElementType, Type.Row)(loc, member.array);
+                GlUtils().uniformMatrix!(Type.ElementType, Type.Row)(loc, member.array);
             } else static if (is(Type == Texture)) {
                 assert(member !is null, "UniformTexture's value is null");
                 Texture.activate(textureUnit);
                 member.bind();
-                GlUtils.uniform(loc, textureUnit);
+                GlUtils().uniform(loc, textureUnit);
                 textureUnit++;
             } else {
                 static assert(false);

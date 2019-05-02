@@ -53,7 +53,9 @@ abstract class Material {
     void use() {
         import sbylib.wrapper.gl : GlFunction, PatchParamName;
 
-        GlFunction.setPatchParameter(PatchParamName.Vertices, patchVertices);
+        if (patchVertices > 0) {
+            GlFunction().setPatchParameter(PatchParamName.Vertices, patchVertices);
+        }
         this.program.use();
     }
 

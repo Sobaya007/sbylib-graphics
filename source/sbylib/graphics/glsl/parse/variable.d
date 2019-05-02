@@ -15,6 +15,7 @@ class Variable : Statement {
 
     this(ref Token[] tokens) {
         import std.array : empty;
+        import std.string : endsWith;
         import sbylib.graphics.glsl.parse.functions : convert, expect;
 
         if (tokens[0].str == "layout") {
@@ -34,6 +35,10 @@ class Variable : Statement {
             while (tokens[0].str != ";") {
                 this.assignedValue ~= tokens.convert();
             }
+        }
+        if (this.id.endsWith("[]")) {
+            this.id = this.id[0..$-2];
+            this.type ~= "[]";
         }
         tokens.expect(";");
     }

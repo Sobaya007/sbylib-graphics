@@ -17,46 +17,55 @@ class Token {
 }
 
 Token[] tokenize(string code) {
-    return tokenize(code, null, new Token[0], 1, 0);
-}
-
-private Token[] tokenize(string code, Token buffer, Token[] tokens, uint line, uint column) {
     import std.array : empty;
 
-    if (code.empty) {
-        tokens.addToken(buffer);
-        return tokens;
-    }
+    Token buffer = null;
+    auto tokens = new Token[0];
+    uint line = 1;
+    uint column = 0;
 
-    if (code.isBeginningOfLineComment) {
-        return tokenizeLineComment(code[2..$], tokens, line, column);
-    }
-    if (code.isBeginningOfBlockComment) {
-        return tokenizeBlockComment(code[2..$], tokens, line, column);
-    }
-
-    char frontCharacter = code[0];
-
-    if (frontCharacter.isDelimitor()) {
-        tokens.addToken(buffer);
-        if (frontCharacter.isBreak()) {
-            return tokenize(code[1..$], null, tokens, line+1, 0);
+    while (code.empty is false) {
+        if (code.isBeginningOfLineComment) {
+            code = code[2..$];
+            tokenizeLineComment(code, buffer, tokens, line, column);
+        } else if (code.isBeginningOfBlockComment) {
+            code = code[2..$];
+            tokenizeBlockComment(code, buffer, tokens, line, column);
         } else {
-            return tokenize(code[1..$], null, tokens, line, column+1);
+            char frontCharacter = code[0];
+            if (frontCharacter.isDelimitor()) {
+                tokens.addToken(buffer);
+                buffer = null;
+                code = code[1..$];
+                if (frontCharacter.isBreak()) {
+                    line++;
+                    column = 0;
+                } else {
+                    column++;
+                }
+            } else if (frontCharacter.isSymbol()) {
+                import std.conv : to;
+
+                tokens.addToken(buffer);
+                buffer = null;
+
+                tokens.addToken(new Token(frontCharacter.to!string, line, column));
+
+                code = code[1..$];
+                column++;
+            } else {
+                buffer.addCharacter(frontCharacter, line, column);
+                code = code[1..$];
+                column++;
+            }
         }
     }
-    if (frontCharacter.isSymbol()) {
-        import std.conv : to;
-
-        tokens.addToken(buffer);
-        tokens.addToken(new Token(frontCharacter.to!string, line, column));
-        return tokenize(code[1..$], null, tokens, line, column+1);
-    }
-    buffer.addCharacter(frontCharacter, line, column);
-    return tokenize(code[1..$], buffer, tokens, line, column+1);
+    tokens.addToken(buffer);
+    return tokens;
 }
 
-private Token[] tokenizeLineComment(string code, Token[] tokens, uint line, uint column) {
+
+private void tokenizeLineComment(ref string code, ref Token buffer, ref Token[] tokens, ref uint line, ref uint column) {
     import std.algorithm : countUntil;
     import std.conv : to;
 
@@ -64,22 +73,30 @@ private Token[] tokenizeLineComment(string code, Token[] tokens, uint line, uint
     if (count == -1) count = code.length;
     tokens.addToken(new Token("//", line, column));
     tokens.addToken(new Token(code[0..count], line, column+2));
-    return tokenize(code[count..$], null, tokens, line+1, 0);
+
+    code = code[count..$];
+    buffer = null;
+    line++;
+    column = 0;
 }
 
-private Token[] tokenizeBlockComment(string code, Token[] tokens, uint line, uint column) {
+private void tokenizeBlockComment(ref string code, ref Token buffer, ref Token[] tokens, ref uint line, ref uint column) {
     import std.algorithm : countUntil, count;
     import std.conv : to;
 
     int cnt = 0;
     while (cnt < code.length && code[cnt..$].isEndOfBlockComment) cnt++;
-    if (cnt < code.length-1) cnt++; // because end of blocks comment consists of two characters.
+    if (cnt+1 < code.length) cnt++; // because end of blocks comment consists of two characters.
     tokens.addToken(new Token("/*", line, column));
     tokens.addToken(new Token(code[0..cnt-2], line, column+2));
 
     auto breaks = cast(uint)code[0..cnt].count!(isBreak);
     tokens.addToken(new Token("*/", line+breaks, column)); //雑
-    return tokenize(code[cnt..$], null, tokens, line+breaks, 0);
+
+    code = code[cnt..$];
+    buffer = null;
+    line += breaks;
+    column = 0;
 }
 
 private void addToken(ref Token[] tokens, Token newToken) {
