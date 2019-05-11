@@ -108,13 +108,13 @@ abstract class Material {
                 mixin(format!"@uniform %s %s;"(TypeD!(uni.type), uni.name));
             }
         }
+    }
 
-        private template TypeD(string typeGLSL) {
-            static if (typeGLSL == "sampler2D") {
-                enum TypeD = "Texture";
-            } else {
-                enum TypeD = typeGLSL;
-            }
+    protected template TypeD(string typeGLSL) {
+        static if (typeGLSL == "sampler2D") {
+            enum TypeD = "Texture";
+        } else {
+            enum TypeD = typeGLSL;
         }
     }
 }

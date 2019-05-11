@@ -115,10 +115,12 @@ class Entity : Renderable {
             return material;
         }
 
-        static foreach (mem; getSymbolsByUDA!(MaterialType, uniform)) {
-            import std.traits : hasMember;
-            static if (!hasMember!(typeof(this), mem.stringof)) {
-                mixin(format!"@uniform auto ref %s() { return material.%s; }"(mem.stringof, mem.stringof));
+        static foreach (mem; __traits(allMembers, MaterialType)) {
+            import std.traits : hasUDA, hasMember;
+
+            static if (hasUDA!(__traits(getMember, MaterialType, mem), uniform)
+                    && hasMember!(typeof(this), mem) is false) {
+                mixin(format!"@uniform auto ref %s() { return material.%s; }"(mem, mem));
             }
         }
     }
