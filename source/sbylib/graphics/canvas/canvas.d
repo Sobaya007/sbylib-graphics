@@ -10,6 +10,7 @@ class Canvas {
     package ColorChannel colorChannel;
     package DepthChannel depthChannel;
     package StencilChannel stencilChannel;
+    package debug bool hasCleared;
     private int[2] _size;
 
     this(int[2] size, Framebuffer fb) {
@@ -24,13 +25,15 @@ class Canvas {
         if (stencilChannel) this.stencilChannel.destroy();
     }
 
-    void clear(ClearMode[] mode...) {
+    package void clear(ClearMode[] mode...) {
         import sbylib.wrapper.gl : GlUtils;
 
         if (colorChannel) colorChannel.clearSetting();
         if (depthChannel) depthChannel.clearSetting();
         if (stencilChannel) stencilChannel.clearSetting();
         GlUtils().clear(mode);
+
+        debug hasCleared = true;
     }
 
     void render(Canvas canvas,

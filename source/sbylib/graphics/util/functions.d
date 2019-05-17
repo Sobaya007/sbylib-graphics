@@ -13,21 +13,11 @@ mixin template DefineCachedValue(Type, string attribute, string name, string exp
 {
 
     import std.format : format;
-    import std.traits : isSomeFunction, ReturnType;
     import std.string : replace;
+    import sbylib.graphics.util.functions : VariableType;
 
-    private alias MemberType(string key) = typeof(mixin(key));
-
-    private template VariableType(string key) {
-        alias Type = MemberType!(key);
-        static if (isSomeFunction!(Type)) {
-            alias VariableType = ReturnType!(Type);
-        } else {
-            alias VariableType = Type;
-        }
-    }
     static foreach (key; keys) {
-        mixin(format!"%s _%sSavedValue;"(VariableType!(key).stringof, key.replace(".", "_")));
+        mixin(format!"%s _%sSavedValue;"(VariableType!(typeof(mixin(key))).stringof, key.replace(".", "_")));
     }
     mixin(format!"%s _%sSavedValue;"(Type.stringof, name));
 
@@ -46,6 +36,16 @@ mixin template DefineCachedValue(Type, string attribute, string name, string exp
         }
     }(attribute, Type.stringof, name, "%s", "%s", "%s", "%s", name, expression, name));
 } 
+
+template VariableType(Type) {
+    import std.traits : isSomeFunction, ReturnType;
+
+    static if (isSomeFunction!(Type)) {
+        alias VariableType = ReturnType!(Type);
+    } else {
+        alias VariableType = Type;
+    }
+}
 
 mixin template ImplPos() {
     import sbylib.math : vec3;

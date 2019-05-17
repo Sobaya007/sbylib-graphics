@@ -21,6 +21,7 @@ struct CanvasContext {
     }
 
     ~this() {
+        assert(_canvas.hasCleared);
         _canvasStack.removeBack();
         _canvasStack.back.bind();
     }
