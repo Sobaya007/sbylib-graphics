@@ -19,7 +19,7 @@ class Event(Args...) : IEvent {
     private bool alive = true;
 
     this() {
-        context = EventContext.currentContext.dup;
+        context = EventContext.currentContext;
         foreach (c; context) {
             c.eventList ~= this;
         }

@@ -94,8 +94,8 @@ VoidEvent when(BindNotification condition) {
 private struct ContextRegister {
 
     ~this() {
-        import std.array : popFront;
+        import std : popBack;
 
-        EventContext.currentContext.popFront;
+        EventContext.currentContext.popBack;
     }
 }
