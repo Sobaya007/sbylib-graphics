@@ -258,7 +258,7 @@ class Model : Renderable {
         if (t & AssimpPrimitiveType.Point)    return Primitive.Point;
         if (t & AssimpPrimitiveType.Line)     return Primitive.Line;
         if (t & AssimpPrimitiveType.Triangle) return Primitive.Triangle;
-        if (t & AssimpPrimitiveType.Polygon) return Primitive.Triangle;
+        if (t & AssimpPrimitiveType.Polygon) return Primitive.TriangleFan;
         assert(false);
     }
 

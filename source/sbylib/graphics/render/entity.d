@@ -134,15 +134,21 @@ class Entity : Renderable {
         }
 
         private void setUniform(string memberName)(ref int textureUnit) {
-            import std.traits : isBasicType, isInstanceOf;
+            import std : isBasicType, isInstanceOf, isStaticArray, format;
             import sbylib.wrapper.gl : GlUtils;
             import sbylib.math : Vector, Matrix;
 
             auto member = mixin(memberName);
             alias Type = typeof(member);
-            auto loc = this.material.getUniformLocation(memberName[5..$-2]); // assumed as 'this.memberName()'
+            const name = memberName[5..$-2]; // assumed as 'this.memberName()'
+            auto loc = this.material.getUniformLocation(name);
             static if (isBasicType!(Type)) {
                 GlUtils().uniform(loc, member);
+            } else static if (isStaticArray!(Type)) {
+                foreach (i; 0..member.length) {
+                    loc = this.material.getUniformLocation(format!"%s[%d]"(name,i));
+                    GlUtils().uniform(loc, member[i]);
+                }
             } else static if (isInstanceOf!(Vector, Type)) {
                 GlUtils().uniform(loc, member.array);
             } else static if (isInstanceOf!(Matrix, Type) && Type.Row == Type.Column) {

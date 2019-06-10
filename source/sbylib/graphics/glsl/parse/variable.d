@@ -14,8 +14,7 @@ class Variable : Statement {
     mixin ImplVariable;
 
     this(ref Token[] tokens) {
-        import std.array : empty;
-        import std.string : endsWith;
+        import std : countUntil, empty, endsWith;
         import sbylib.graphics.glsl.parse.functions : convert, expect;
 
         if (tokens[0].str == "layout") {
@@ -36,9 +35,11 @@ class Variable : Statement {
                 this.assignedValue ~= tokens.convert();
             }
         }
-        if (this.id.endsWith("[]")) {
-            this.id = this.id[0..$-2];
-            this.type ~= "[]";
+
+        const begin = this.id.countUntil("[");
+        if (0 <= begin) {
+            this.type ~= this.id[begin..$];
+            this.id = this.id[0..begin];
         }
         tokens.expect(";");
     }

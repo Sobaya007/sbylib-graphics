@@ -2,6 +2,7 @@ module sbylib.graphics.util.functions;
 
 public import sbylib.graphics.geometry.geometry : IGeometry;
 public import sbylib.math;
+public import sbylib.wrapper.freeimage : Image;
 
 import sbylib.graphics.canvas : Canvas;
 import sbylib.wrapper.gl : Texture;
@@ -241,4 +242,13 @@ void render(Canvas dstCanvas, Texture tex, ivec2 p, ivec2 s) {
 
 void lookAt(T)(T entity, vec3 target, vec3 up = vec3(0,1,0)) {
     entity.rot = mat3.lookAt(normalize(entity.pos - target), up);
+}
+
+Texture convert(Image image) {
+    import sbylib.wrapper.gl : TextureBuilder;
+    with (TextureBuilder()) {
+        width = image.width;
+        height = image.height;
+        return build(image.dataArray());
+    }
 }
