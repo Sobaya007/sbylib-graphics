@@ -67,6 +67,14 @@ class Event(Args...) : IEvent {
     }
 }
 
+Event!(Args) then(Args...)(Event!(Args) event, void delegate() callback) 
+    if (Args.length > 0)
+{
+    assert(event.callback is null);
+    event.callback = (Args _) { callback(); };
+    return event;
+}
+
 Event!(Args) then(Args...)(Event!(Args) event, void delegate(Args) callback) {
     assert(event.callback is null);
     event.callback = callback;
