@@ -10,7 +10,7 @@ auto finish(IEvent event) {
 
 VoidEvent when(FinishNotification finish) {
     auto event = new VoidEvent;
-    event.context = null;
+    event._context = null;
     finish.event.addFinishCallback({
         event.fire();
     });
@@ -25,7 +25,7 @@ auto allFinish(IEvent[] eventList) {
 
 VoidEvent when(AllFinishNotification finish) {
     auto event = new VoidEvent;
-    event.context = null;
+    event._context = null;
     auto cnt = finish.eventList.length;
     foreach (e; finish.eventList) {
         e.addFinishCallback({

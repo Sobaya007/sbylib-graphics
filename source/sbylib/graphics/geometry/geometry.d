@@ -11,6 +11,7 @@ enum transformable;
 interface IGeometry {
     void attach(Material);
     void render();
+    ref Primitive primitive();
 }
 
 struct GeometryBuilder(Attribute, Index = uint) {
@@ -35,7 +36,7 @@ struct GeometryBuilder(Attribute, Index = uint) {
 
 class Geometry(Attribute, Index = uint) : IGeometry {
 
-    Primitive primitive;
+    private Primitive _primitive;
     private Attribute[] _attributeList;
     private Index[] _indexList;
     private Buffer!Attribute vertexBuffer;
@@ -56,6 +57,10 @@ class Geometry(Attribute, Index = uint) : IGeometry {
             this.indexBuffer = new Buffer!Index;
             this.indexBuffer.sendData(indexList, BufferTarget.ElementArray);
         }
+    }
+
+    override ref Primitive primitive() {
+        return _primitive;
     }
 
     override void attach(Material material) {

@@ -30,7 +30,14 @@ class Entity : Renderable {
     }
 
     override void renderImpl() {
-        import sbylib.wrapper.gl : GlFunction, GlUtils, TestFunc;
+        import sbylib.wrapper.gl : GlFunction, GlUtils, TestFunc, Primitive;
+
+        if (this._material.hasTessallation())
+            assert(this.geometry.primitive == Primitive.Patch,
+                    "You must set geometry.primitive Primitive.Patch when you use Tessellation shader");
+        else
+            assert(this.geometry.primitive != Primitive.Patch,
+                    "You can set geometry.primitive Primitive.Patch only when you use Tessellation shader");
 
         this._material.use();
         this.setUniform();

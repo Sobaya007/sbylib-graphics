@@ -13,6 +13,7 @@ abstract class Material {
     string tessellationControlShaderSource() { return ""; }
     string tessellationEvaluationShaderSource() { return ""; }
     int patchVertices() { return -1; }
+    bool hasTessallation() { return false; }
 
     protected Program program;
 
@@ -48,6 +49,14 @@ abstract class Material {
         }
 
         this.program.link();
+
+        assert((tessellationControlShaderSource.length > 0
+                && tessellationEvaluationShaderSource.length > 0
+                && patchVertices >= 0)
+            || (tessellationControlShaderSource.length == 0
+            && tessellationEvaluationShaderSource.length == 0
+            && patchVertices == -1),
+            "If you want to use tessellation shader, you must mixin all of 'TessellationControlShaderSource', 'TessellationEvaluationShaderSource' and 'PatchVertices'");
     }
 
     void use() {
@@ -89,6 +98,7 @@ abstract class Material {
 
     protected mixin template TessellationEvaluationShaderSource(string source) {
         override string tessellationEvaluationShaderSource() { return source; }
+        override bool hasTessallation() { return true; }
         mixin AddUniform!(source);
     }
 

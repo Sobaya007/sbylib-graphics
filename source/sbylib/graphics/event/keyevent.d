@@ -142,12 +142,20 @@ KeyNotification released(KeyButtonWithSpecial button) {
 
 auto pressing(KeyButton key) {
     import sbylib.graphics.event.frameevent : FrameNotification;
-    return FrameNotification(() => Window.getCurrentWindow().getKey(key) == ButtonState.Press);
+    return FrameNotification(() => key.isPressed);
 }
 
 auto releasing(KeyButton key) {
     import sbylib.graphics.event.frameevent : FrameNotification;
-    return FrameNotification(() => Window.getCurrentWindow().getKey(key) == ButtonState.Release);
+    return FrameNotification(() => key.isReleased);
+}
+
+auto isPressed(KeyButton key) {
+    return Window.getCurrentWindow().getKey(key) == ButtonState.Press;
+}
+
+auto isReleased(KeyButton key) {
+    return Window.getCurrentWindow().getKey(key) == ButtonState.Release;
 }
 
 static foreach (NotificationType; AliasSeq!(KeyNotification, OrKeyNotification, AndKeyNotification)) {

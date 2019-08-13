@@ -282,3 +282,11 @@ class Model : Renderable {
         return result;
     }
 }
+
+void traverse(alias f)(Model model) {
+    void traverse(Model.ModelNode node) {
+        foreach (mesh; node.meshes) f(mesh);
+        foreach (child; node.children) traverse(child);
+    }
+    traverse(model.rootNode);
+}

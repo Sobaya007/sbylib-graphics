@@ -6,6 +6,8 @@ import sbylib.graphics.event.eventcontext : EventContext;
 interface IEvent {
     void kill();
     void addFinishCallback(void delegate());
+    bool isAlive() const;
+    EventContext[] context();
 }
 
 class Event(Args...) : IEvent {
@@ -15,14 +17,15 @@ class Event(Args...) : IEvent {
     private void delegate(Exception) onerror;
     private bool delegate() killCondition;
     private void delegate()[] finishCallbackList;
-    package EventContext[] context;
+    package EventContext[] _context;
     private bool alive = true;
 
     this() {
-        context = EventContext.currentContext;
+        _context = EventContext.currentContext;
         foreach (c; context) {
             c.eventList ~= this;
         }
+        EventWatcher._eventList ~= this;
     }
 
     void fire(Args args) {
@@ -50,7 +53,7 @@ class Event(Args...) : IEvent {
         else throw e;
     }
 
-    bool isAlive() const {
+    override bool isAlive() const {
         return alive;
     }
 
@@ -64,6 +67,10 @@ class Event(Args...) : IEvent {
         } else {
             finishCallback();
         }
+    }
+
+    override EventContext[] context() {
+        return _context;
     }
 }
 
@@ -104,3 +111,21 @@ Event!(Args) once(Args...)(Event!(Args) event) {
 }
 
 alias VoidEvent = Event!();
+
+class EventWatcher {
+static:
+
+    import std : Array;
+
+    Array!IEvent _eventList;
+
+    void update() {
+        import std : find;
+        _eventList.linearRemove(_eventList[].find!(e => !e.isAlive));
+    }
+
+    const(Array!IEvent) eventList() {
+        return _eventList;
+    }
+
+}
