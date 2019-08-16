@@ -6,7 +6,7 @@ import sbylib.graphics.action.action : IAction, ImplAction;
 import sbylib.graphics.action.animation : Animation;
 import sbylib.graphics.action.run : RunAction;
 import sbylib.graphics.action.wait : WaitAction;
-import sbylib.graphics.event : VoidEvent;
+import sbylib.event : VoidEvent;
 import std.container : Array;
 
 class ActionSequence : IAction {
@@ -86,7 +86,7 @@ class ActionSequence : IAction {
 
         this(IAction action) { 
             import sbylib.graphics.action.action : when;
-            import sbylib.graphics.event.event : then;
+            import sbylib.event.event : then;
 
             this.action = action; 
             when(action.finish).then({

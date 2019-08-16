@@ -3,7 +3,7 @@ module sbylib.graphics.action.run;
 import sbylib.graphics.action.action : IAction, ImplAction;
 
 public import std.datetime;
-public import sbylib.graphics.event : VoidEvent;
+public import sbylib.event : VoidEvent;
 
 class RunAction : IAction {
 
@@ -12,7 +12,7 @@ class RunAction : IAction {
     mixin ImplAction;
 
     this(void delegate() g) {
-        import sbylib.graphics.event : when, Frame, then, until;
+        import sbylib.event : when, Frame, then, until;
         this.f = {
             g();
 

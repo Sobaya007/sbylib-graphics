@@ -47,7 +47,7 @@ class Animation(T) : IAction {
 
     override void start() {
         import std.datetime : Clock;
-        import sbylib.graphics.event : when, then, until, Frame, finish;
+        import sbylib.event : when, then, until, Frame, finish;
 
         auto starttime = Clock.currTime;
 

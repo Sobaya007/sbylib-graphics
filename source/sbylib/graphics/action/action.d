@@ -1,6 +1,6 @@
 module sbylib.graphics.action.action;
 
-public import sbylib.graphics.event : VoidEvent;
+public import sbylib.event : VoidEvent;
 
 alias ActionFinishCallback = void delegate();
 struct ActionFinishNotification { IAction action; }

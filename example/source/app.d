@@ -2,6 +2,7 @@ import std.algorithm : each;
 import std.conv : to;
 import sbylib.math;
 import sbylib.graphics;
+import sbylib.event;
 import sbylib.wrapper.gl;
 import sbylib.wrapper.glfw;
 import scene0 : createScene0;

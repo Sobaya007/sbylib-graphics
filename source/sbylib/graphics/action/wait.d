@@ -3,7 +3,7 @@ module sbylib.graphics.action.wait;
 import sbylib.graphics.action.action : IAction, ImplAction;
 
 public import std.datetime;
-public import sbylib.graphics.event : VoidEvent;
+public import sbylib.event : VoidEvent;
 
 class WaitAction : IAction {
 
@@ -17,7 +17,7 @@ class WaitAction : IAction {
 
     override void start() {
         import std.datetime : Clock;
-        import sbylib.graphics.event : Frame, when, until, finish, then;
+        import sbylib.event : Frame, when, until, finish, then;
 
         auto starttime = Clock.currTime;
 

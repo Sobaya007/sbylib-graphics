@@ -1,4 +1,5 @@
 import sbylib.graphics;
+import sbylib.event;
 import sbylib.wrapper.glfw;
 import app : Scene;
 import normalmaterial;
